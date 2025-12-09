@@ -225,7 +225,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 👥 Equipo
 
-**Ghost Cookie Team**
+**Franky Solutions**
 
 - Desarrollo y diseño
 
@@ -242,6 +242,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 ## 📞 Contacto
 
 Para preguntas o sugerencias, contacta al equipo de desarrollo.
++55(11)980752959 Whatsapp
 
 ---
 
