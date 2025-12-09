@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=400, initial-scale=1.0">
+  <title>Ghost Cookie</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <img src="../icons/icon48.png" alt="Ghost Cookie" class="logo-icon">
+        <div class="logo-text">
+          <h1>Ghost Cookie</h1>
+          <span class="tagline">Navega como un fantasma</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-settings" id="openSettings" title="Configuración">⚙️</button>
+        <label class="toggle-switch">
+          <input type="checkbox" id="protectionToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <div class="stats-container">
+      <div class="stat-card trackers">
+        <div class="stat-icon">🚫</div>
+        <div class="stat-info">
+          <span class="stat-number" id="trackersBlocked">0</span>
+          <span class="stat-label">Trackers Bloqueados</span>
+        </div>
+      </div>
+      <div class="stat-card cookies">
+        <div class="stat-icon">🍪</div>
+        <div class="stat-info">
+          <span class="stat-number" id="cookiesCount">0</span>
+          <span class="stat-label">Cookies Detectadas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Privacy Score -->
+    <div class="privacy-score" id="privacyScore" style="display: none;">
+      <div class="score-header">
+        <span class="score-emoji" id="scoreEmoji">🛡️</span>
+        <div class="score-info">
+          <span class="score-label">Score de Privacidad</span>
+          <span class="score-rating" id="scoreRating">Calculando...</span>
+        </div>
+      </div>
+      <div class="score-bar">
+        <div class="score-fill" id="scoreFill" style="width: 0%"></div>
+      </div>
+      <span class="score-value" id="scoreValue">0</span>
+    </div>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="trackers">
+        <span class="tab-icon">🔍</span>
+        Trackers
+      </button>
+      <button class="tab-btn" data-tab="cookies">
+        <span class="tab-icon">🍪</span>
+        Cookies
+      </button>
+    </nav>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Trackers Tab -->
+      <div class="tab-panel active" id="trackers-panel">
+        <div class="panel-header">
+          <h3>Trackers en este sitio</h3>
+          <span class="badge" id="trackersBadge">0</span>
+        </div>
+        <div class="tracker-list" id="trackerList">
+          <div class="empty-state">
+            <span class="empty-icon">✨</span>
+            <p>No se detectaron trackers</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cookies Tab -->
+      <div class="tab-panel" id="cookies-panel">
+        <div class="panel-header">
+          <h3>Cookies del sitio</h3>
+          <button class="btn-danger" id="clearAllCookies">
+            <span>🗑️</span> Eliminar Todas
+          </button>
+        </div>
+        <div class="cookies-list" id="cookiesList">
+          <div class="empty-state">
+            <span class="empty-icon">🍪</span>
+            <p>No hay cookies</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="site-info">
+        <span class="site-icon">🌐</span>
+        <span class="site-url" id="currentSite">-</span>
+      </div>
+      <div class="protection-status" id="protectionStatus">
+        <span class="status-dot active"></span>
+        Protección activa
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
