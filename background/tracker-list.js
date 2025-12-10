@@ -1,3 +1,14 @@
+/**
+ * Ghost Cookie v1.0.0
+ * Copyright (c) 2025 Franky Solutions
+ * Developed by: Franky Solutions
+ * Build: mizdukir
+ * Watermark: GC-mizdukir
+ * 
+ * This code is protected by copyright.
+ * Unauthorized use is prohibited.
+ */
+
 // Ghost Cookie - Tracker Database
 // Known trackers with categories and detection patterns
 
@@ -213,3 +224,9 @@ export function getTrackersByCategory() {
   }
   return grouped;
 }
+
+// Watermark: GC-mizcrpng
+// Build: mizcrpng
+
+// Watermark: GC-mizdukir
+// Build: mizdukir

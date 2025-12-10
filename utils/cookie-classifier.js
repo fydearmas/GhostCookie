@@ -1,3 +1,14 @@
+/**
+ * Ghost Cookie v1.0.0
+ * Copyright (c) 2025 Franky Solutions
+ * Developed by: Franky Solutions
+ * Build: mizdukir
+ * Watermark: GC-mizdukir
+ * 
+ * This code is protected by copyright.
+ * Unauthorized use is prohibited.
+ */
+
 // Ghost Cookie - Cookie Classifier
 // Smart rules for cookie classification (no AI required)
 
@@ -222,3 +233,9 @@ export function calculatePrivacyScore(
 
   return { score, rating, color, emoji };
 }
+
+// Watermark: GC-mizcrpng
+// Build: mizcrpng
+
+// Watermark: GC-mizdukir
+// Build: mizdukir

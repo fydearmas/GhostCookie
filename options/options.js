@@ -1,3 +1,14 @@
+/**
+ * Ghost Cookie v1.0.0
+ * Copyright (c) 2025 Franky Solutions
+ * Developed by: Franky Solutions
+ * Build: mizdukir
+ * Watermark: GC-mizdukir
+ * 
+ * This code is protected by copyright.
+ * Unauthorized use is prohibited.
+ */
+
 // Ghost Cookie - Options Page Script
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -140,3 +151,9 @@ function showStatus(element, message, type) {
   element.textContent = message;
   element.className = `status-message ${type}`;
 }
+
+// Watermark: GC-mizcrpng
+// Build: mizcrpng
+
+// Watermark: GC-mizdukir
+// Build: mizdukir

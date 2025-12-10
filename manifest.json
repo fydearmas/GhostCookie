@@ -3,7 +3,8 @@
   "name": "Ghost Cookie",
   "version": "1.0.0",
   "description": "👻 Navega como un fantasma: bloquea rastreadores y elimina cookies",
-  "author": "Ghost Cookie Team",
+  "author": "Franky Solutions",
+  "homepage_url": "https://frankysolutions.com.br",
   
   "permissions": [
     "cookies",

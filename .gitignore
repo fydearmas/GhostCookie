@@ -1,0 +1,24 @@
+# Archivos de desarrollo - No incluir en producción
+node_modules/
+*.log
+npm-debug.log*
+
+# Archivos de build
+build-info.json
+*.min.js
+*.min.css
+
+# Archivos temporales
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-*
+
+# Archivos de sistema
+desktop.ini

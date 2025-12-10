@@ -1,0 +1,16 @@
+{
+  "name": "ghost-cookie-build",
+  "version": "1.0.0",
+  "description": "Build tools for Ghost Cookie extension",
+  "scripts": {
+    "build": "node build.js",
+    "obfuscate": "npm run obfuscate:popup && npm run obfuscate:background && npm run obfuscate:content && npm run obfuscate:options",
+    "obfuscate:popup": "terser popup/popup.js -o popup/popup.min.js -c -m --comments false",
+    "obfuscate:background": "terser background/service-worker.js -o background/service-worker.min.js -c -m --comments false",
+    "obfuscate:content": "terser content/content.js -o content/content.min.js -c -m --comments false",
+    "obfuscate:options": "terser options/options.js -o options/options.min.js -c -m --comments false"
+  },
+  "devDependencies": {
+    "terser": "^5.19.0"
+  }
+}

@@ -1,0 +1,37 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle for better visibility -->
+  <circle cx="64" cy="64" r="60" fill="#f5f5dc" opacity="0.9"/>
+  
+  <!-- Ghost body -->
+  <ellipse cx="64" cy="70" rx="35" ry="40" fill="#f5f5dc" stroke="#4a2511" stroke-width="3"/>
+  
+  <!-- Ghost arms -->
+  <ellipse cx="35" cy="75" rx="8" ry="12" fill="#f5f5dc" stroke="#4a2511" stroke-width="2"/>
+  <ellipse cx="93" cy="75" rx="8" ry="12" fill="#f5f5dc" stroke="#4a2511" stroke-width="2"/>
+  
+  <!-- Ghost eyes -->
+  <circle cx="52" cy="60" r="6" fill="#4a2511"/>
+  <circle cx="76" cy="60" r="6" fill="#4a2511"/>
+  <circle cx="54" cy="58" r="2" fill="white"/>
+  <circle cx="78" cy="58" r="2" fill="white"/>
+  
+  <!-- Ghost smile -->
+  <path d="M 52 72 Q 64 80 76 72" stroke="#4a2511" stroke-width="3" fill="none" stroke-linecap="round"/>
+  
+  <!-- Cookie -->
+  <circle cx="80" cy="95" r="18" fill="#d2691e" stroke="#8b4513" stroke-width="2"/>
+  
+  <!-- Cookie chips -->
+  <circle cx="75" cy="90" r="3" fill="#654321"/>
+  <circle cx="85" cy="92" r="2.5" fill="#654321"/>
+  <circle cx="78" cy="98" r="2" fill="#654321"/>
+  <circle cx="84" cy="100" r="2.5" fill="#654321"/>
+  
+  <!-- Cookie crumbs -->
+  <circle cx="95" cy="102" r="2" fill="#d2691e"/>
+  <circle cx="100" cy="105" r="1.5" fill="#d2691e"/>
+  <circle cx="92" cy="108" r="1.5" fill="#d2691e"/>
+  
+  <!-- Shine effect on ghost -->
+  <ellipse cx="58" cy="55" rx="8" ry="12" fill="white" opacity="0.3"/>
+</svg>

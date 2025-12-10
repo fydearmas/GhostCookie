@@ -1,3 +1,14 @@
+/**
+ * Ghost Cookie v1.0.0
+ * Copyright (c) 2025 Franky Solutions
+ * Developed by: Franky Solutions
+ * Build: mizdukir
+ * Watermark: GC-mizdukir
+ * 
+ * This code is protected by copyright.
+ * Unauthorized use is prohibited.
+ */
+
 // Ghost Cookie - Service Worker
 // Background script for tracker detection and blocking
 
@@ -348,3 +359,9 @@ console.log(
   "Ghost Cookie - Service Worker initialized with enhanced detection"
 );
 updateBadge();
+
+// Watermark: GC-mizcrpng
+// Build: mizcrpng
+
+// Watermark: GC-mizdukir
+// Build: mizdukir
