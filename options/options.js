@@ -4,7 +4,7 @@
  * Developed by: Franky Solutions
  * Build: mizdukir
  * Watermark: GC-mizdukir
- * 
+ *
  * This code is protected by copyright.
  * Unauthorized use is prohibited.
  */
@@ -27,9 +27,7 @@ function loadSettings() {
         result.classifyCookies !== false;
       document.getElementById("enableAI").checked = result.enableAI || false;
 
-      if (result.geminiApiKey) {
-        document.getElementById("geminiApiKey").value = result.geminiApiKey;
-      }
+      document.getElementById("geminiApiKey").value = result.geminiApiKey || "";
 
       toggleApiKeySection(result.enableAI || false);
     }
@@ -89,27 +87,38 @@ async function testApiConnection() {
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [
             {
-              parts: [{ text: "Test" }],
+              parts: [{ text: "Hello" }],
             },
           ],
         }),
       }
     );
 
+    const data = await response.json();
+
     if (response.ok) {
       showStatus(statusEl, "✅ Conexión exitosa!", "success");
     } else {
-      showStatus(statusEl, "❌ API key inválida", "error");
+      console.error("Gemini API Error:", data);
+      const errorMessage = data.error?.message || "Error desconocido";
+      // Traducir algunos errores comunes
+      let friendlyError = errorMessage;
+      if (errorMessage.includes("API key not valid"))
+        friendlyError = "API key no válida";
+      if (errorMessage.includes("quota")) friendlyError = "Cuota excedida";
+
+      showStatus(statusEl, `❌ Error: ${friendlyError}`, "error");
     }
   } catch (error) {
-    showStatus(statusEl, "❌ Error de conexión", "error");
+    console.error("Network Error:", error);
+    showStatus(statusEl, `❌ Error de red: ${error.message}`, "error");
   }
 }
 

@@ -4,7 +4,7 @@
  * Developed by: Franky Solutions
  * Build: mizdukir
  * Watermark: GC-mizdukir
- * 
+ *
  * This code is protected by copyright.
  * Unauthorized use is prohibited.
  */
@@ -43,12 +43,25 @@ document.addEventListener("DOMContentLoaded", () => {
 // Load settings
 async function loadSettings() {
   chrome.storage.local.get(
-    ["showPrivacyScore", "classifyCookies"],
+    ["showPrivacyScore", "classifyCookies", "enableAI", "geminiApiKey"],
     (result) => {
       window.ghostCookieSettings = {
         showPrivacyScore: result.showPrivacyScore !== false,
         classifyCookies: result.classifyCookies !== false,
+        enableAI: result.enableAI || false,
+        geminiApiKey: result.geminiApiKey || "",
       };
+
+      if (
+        window.ghostCookieSettings.enableAI &&
+        window.ghostCookieSettings.geminiApiKey
+      ) {
+        const aiSection = document.getElementById("aiAnalysis");
+        if (aiSection) {
+          aiSection.style.display = "block";
+          analyzeWithAI();
+        }
+      }
     }
   );
 }
@@ -383,8 +396,74 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Watermark: GC-mizcrpng
-// Build: mizcrpng
+// ===== AI Analysis Logic =====
+let aiAnalyzed = false;
 
-// Watermark: GC-mizdukir
-// Build: mizdukir
+async function analyzeWithAI() {
+  if (aiAnalyzed) return;
+  aiAnalyzed = true;
+
+  const container = document.getElementById("aiContent");
+  const tab = await getCurrentTab();
+  if (!tab?.url) return;
+
+  try {
+    const url = new URL(tab.url).hostname;
+
+    // Get Trackers
+    const trackerData = await new Promise((resolve) =>
+      chrome.runtime.sendMessage(
+        { action: "getTrackers", domain: url },
+        resolve
+      )
+    );
+    const trackers = (trackerData?.trackers || [])
+      .slice(0, 5)
+      .map((t) => t.name);
+
+    // Get Cookies
+    const allCookies = await chrome.cookies.getAll({ domain: url });
+    const cookies = allCookies.slice(0, 5).map((c) => c.name);
+
+    if (trackers.length === 0 && cookies.length === 0) {
+      container.innerHTML = "✅ Todo limpio. No hay amenazas que analizar.";
+      return;
+    }
+
+    const prompt = `Como experto en privacidad, analiza el sitio ${url}.
+    Detecté estos rastreadores bloqueados: ${trackers.join(", ") || "Ninguno"}.
+    Y estas cookies: ${cookies.join(", ")}.
+    
+    Explica en 2 frases cortas y sencillas en Español (usando tú): ¿Qué intentan hacer con mis datos y por qué es bueno bloquearlos? No uses markdown complejo.`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${window.ghostCookieSettings.geminiApiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+      let text = data.candidates[0].content.parts[0].text;
+      // Simple sanitization and bolding
+      text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      container.innerHTML = text;
+    } else {
+      const errorMsg = data.error?.message || "";
+      if (errorMsg.includes("quota")) {
+        container.innerHTML =
+          "<span style='color:#f87171'>Cuota IA excedida. Intenta en 1 min.</span>";
+      } else {
+        // Silently handle error or show generic message
+        container.innerHTML = "No pude analizar este sitio ahora. 🤖💤";
+      }
+    }
+  } catch (error) {
+    container.innerHTML =
+      "<span style='color:#f87171'>Sin conexión con IA.</span>";
+  }
+}

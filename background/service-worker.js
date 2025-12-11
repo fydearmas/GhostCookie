@@ -4,7 +4,7 @@
  * Developed by: Franky Solutions
  * Build: mizdukir
  * Watermark: GC-mizdukir
- * 
+ *
  * This code is protected by copyright.
  * Unauthorized use is prohibited.
  */
@@ -149,7 +149,6 @@ function detectTrackerFromUrl(url) {
 }
 
 // ===== Monitor Network Requests =====
-// Using webRequest to detect when our rules block requests
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
     if (!state.protectionEnabled) return;
@@ -227,7 +226,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: true });
       break;
     case "clearStats":
-      // Clear stats for a specific domain
       if (message.domain) {
         delete state.blockedTrackers[message.domain];
         delete state.detectedTrackers[message.domain];
@@ -262,7 +260,7 @@ async function handleToggleProtection(enabled) {
       });
     }
   } catch (e) {
-    console.error("Ghost Cookie: Error toggling rules", e);
+    // Silent fail
   }
 
   updateBadge();
@@ -301,7 +299,7 @@ function updateBadge(domain) {
 
     const tabDomain = domain || getDomainFromUrl(tabs[0].url);
     const trackerList = state.detectedTrackers[tabDomain] || [];
-    const count = trackerList.length; // Show unique trackers count
+    const count = trackerList.length;
 
     if (state.protectionEnabled && count > 0) {
       chrome.action.setBadgeText({ text: count.toString(), tabId: tabs[0].id });
@@ -332,7 +330,6 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "loading" && changeInfo.url) {
-    // Clear stats for new navigation
     const domain = getDomainFromUrl(changeInfo.url);
     if (domain && !domain.startsWith("chrome")) {
       delete state.detectedTrackers[domain];
@@ -355,13 +352,4 @@ function getDomainFromUrl(url) {
 }
 
 // ===== Initialization =====
-console.log(
-  "Ghost Cookie - Service Worker initialized with enhanced detection"
-);
 updateBadge();
-
-// Watermark: GC-mizcrpng
-// Build: mizcrpng
-
-// Watermark: GC-mizdukir
-// Build: mizdukir

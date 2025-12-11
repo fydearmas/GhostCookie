@@ -668,3 +668,48 @@ body {
   color: var(--accent-secondary);
   text-decoration: underline;
 }
+
+/* ===== AI Analysis Section ===== */
+.ai-analysis {
+  background: rgba(138, 43, 226, 0.05);
+  border: 1px solid rgba(138, 43, 226, 0.2);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin: 16px 20px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c084fc;
+}
+
+.ai-content {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.loading-spinner {
+  animation: spin 1.5s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
