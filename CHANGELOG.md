@@ -192,7 +192,6 @@ Ninguno reportado en esta versión.
 
 ### Planificado para v1.2.0
 
-- [ ] Análisis con IA (Gemini)
 - [ ] Detección de trackers desconocidos
 - [ ] Recomendaciones personalizadas
 

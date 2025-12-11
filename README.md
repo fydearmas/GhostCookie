@@ -40,18 +40,19 @@ Navega como un fantasma: bloquea trackers, gestiona cookies y protege tu privaci
 
 ## 🚀 Instalación
 
-### Modo Desarrollador (Local)
+### Instalación desde ZIP (Release v1.0.0)
 
-1. Clona o descarga este repositorio
-2. Abre Chrome y ve a `chrome://extensions/`
-3. Activa **"Modo de desarrollador"** (esquina superior derecha)
-4. Haz clic en **"Cargar extensión sin empaquetar"**
-5. Selecciona la carpeta `plugin_browser`
-6. ¡Listo! El icono 👻 aparecerá en tu barra de herramientas
+1. Descarga o localiza el archivo `ghost-cookie-v1.0.0-final.zip`.
+2. Descomprime el archivo en una carpeta de tu elección.
+3. Abre Chrome y navega a `chrome://extensions/`.
+4. Activa el **"Modo de desarrollador"** (interruptor en la esquina superior derecha).
+5. Haz clic en el botón **"Cargar descomprimida"**.
+6. Selecciona la carpeta donde descomprimiste los archivos.
+7. ¡Listo! El icono 👻 aparecerá en tu barra de extensiones.
 
 ### Chrome Web Store (Próximamente)
 
-La extensión estará disponible en Chrome Web Store próximamente.
+La extensión ha sido empaquetada y está lista para publicación en la Chrome Web Store.
 
 ---
 
