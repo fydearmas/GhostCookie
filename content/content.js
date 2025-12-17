@@ -2,8 +2,8 @@
  * Ghost Cookie v1.0.0
  * Copyright (c) 2025 Franky Solutions
  * Developed by: Franky Solutions
- * Build: mizdukir
- * Watermark: GC-mizdukir
+ * Build: mj9e32q8
+ * Watermark: GC-mj9e32q8
  * 
  * This code is protected by copyright.
  * Unauthorized use is prohibited.
@@ -199,3 +199,9 @@
 
 // Watermark: GC-mizdukir
 // Build: mizdukir
+
+// Watermark: GC-mj9cmgyy
+// Build: mj9cmgyy
+
+// Watermark: GC-mj9e32q8
+// Build: mj9e32q8

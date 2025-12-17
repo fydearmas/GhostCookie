@@ -4,6 +4,86 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 
 ---
 
+## [1.1.0] - 2025-12-16
+
+### 🎉 Nueva Funcionalidad: Bloqueo de Anuncios de YouTube
+
+#### ✨ Características Añadidas
+
+**Bloqueo de Anuncios de YouTube**
+
+- Bloqueo automático de anuncios pre-roll (antes del video)
+- Bloqueo de anuncios mid-roll (durante el video)
+- Bloqueo de anuncios post-roll (después del video)
+- Eliminación de banners publicitarios en la página
+- Eliminación de overlays en los videos
+- Auto-skip de anuncios cuando sea posible
+- Aceleración de anuncios no saltables
+
+**Content Script Específico para YouTube**
+
+- Nuevo archivo `content/youtube-adblocker.js`
+- Detección y eliminación de elementos de anuncios del DOM
+- MutationObserver para detectar anuncios dinámicos
+- Monitoreo del estado del player de video
+- Inyección de CSS para ocultar elementos publicitarios
+
+**Reglas de Red Actualizadas**
+
+- 10 nuevas reglas en `tracker_rules.json` (IDs 31-40)
+- Bloqueo de dominios de anuncios de YouTube:
+  - `youtube.com/api/stats/ads`
+  - `youtube.com/pagead/`
+  - `youtube.com/ptracking`
+  - `youtube.com/get_midroll_info`
+  - `s.ytimg.com/yts/jsbin/www-pagead`
+  - Y más...
+
+**Interfaz de Usuario Mejorada**
+
+- Indicador especial cuando se está en YouTube
+- Estadísticas específicas de anuncios de YouTube bloqueados
+- Icono 📺 para identificar YouTube
+- Contador de anuncios bloqueados en tiempo real
+
+**Service Worker Actualizado**
+
+- Nuevos patrones de detección para YouTube Ads
+- Categorización especial para anuncios de YouTube
+- Monitoreo de requests relacionados con publicidad
+
+#### 🔧 Cambios Técnicos
+
+- Actualizado `manifest.json` con content script específico para YouTube
+- Añadidos 5 nuevos patrones de tracker en `service-worker.js`
+- Mejorado `popup.js` con función `showYouTubeIndicator()`
+- Añadidos estilos CSS para el indicador de YouTube en `popup.css`
+
+#### 📁 Archivos Modificados
+
+```
+plugin_browser/
+├── manifest.json                 # Añadido content script para YouTube
+├── content/
+│   └── youtube-adblocker.js     # NUEVO - Bloqueador específico de YouTube
+├── background/
+│   └── service-worker.js        # Añadidos patrones de YouTube
+├── popup/
+│   ├── popup.js                 # Añadida función showYouTubeIndicator()
+│   └── popup.css                # Añadidos estilos para indicador de YouTube
+└── rules/
+    └── tracker_rules.json       # Añadidas 10 reglas para YouTube (31-40)
+```
+
+#### 📝 Notas
+
+- El bloqueo de YouTube es automático y no requiere configuración
+- YouTube puede detectar el bloqueador en algunos casos
+- La funcionalidad de rastreadores existente no se ve afectada
+- Incremento de ~5-10KB en el tamaño del plugin
+
+---
+
 ## [1.0.0] - 2025-12-09
 
 ### 🎉 Lanzamiento Inicial

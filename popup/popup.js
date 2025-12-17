@@ -2,6 +2,17 @@
  * Ghost Cookie v1.0.0
  * Copyright (c) 2025 Franky Solutions
  * Developed by: Franky Solutions
+ * Build: mj9e32q8
+ * Watermark: GC-mj9e32q8
+ * 
+ * This code is protected by copyright.
+ * Unauthorized use is prohibited.
+ */
+
+/**
+ * Ghost Cookie v1.0.0
+ * Copyright (c) 2025 Franky Solutions
+ * Developed by: Franky Solutions
  * Build: mizdukir
  * Watermark: GC-mizdukir
  *
@@ -154,6 +165,11 @@ async function loadCurrentSite() {
     try {
       const url = new URL(tab.url);
       siteUrlEl.textContent = url.hostname;
+
+      // Check if on YouTube
+      if (url.hostname.includes("youtube.com")) {
+        showYouTubeIndicator(url.hostname);
+      }
     } catch {
       siteUrlEl.textContent = "Nueva pestaña";
     }
@@ -396,6 +412,53 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// ===== YouTube Indicator =====
+function showYouTubeIndicator(domain) {
+  // Check if indicator already exists in HTML, if not create it
+  let indicator = document.getElementById("youtubeIndicator");
+
+  if (!indicator) {
+    // Create the indicator element
+    indicator = document.createElement("div");
+    indicator.id = "youtubeIndicator";
+    indicator.className = "youtube-indicator";
+    indicator.innerHTML = `
+      <div class="youtube-header">
+        <span class="youtube-icon">📺</span>
+        <span class="youtube-text">YouTube Ad Blocker Activo</span>
+      </div>
+      <div class="youtube-stats">
+        <span class="youtube-stat-label">Anuncios bloqueados:</span>
+        <span class="youtube-stat-value" id="youtubeAdsBlocked">0</span>
+      </div>
+    `;
+
+    // Insert after stats container
+    const statsContainer = document.querySelector(".stats-container");
+    if (statsContainer) {
+      statsContainer.after(indicator);
+    }
+  }
+
+  indicator.style.display = "block";
+
+  // Update YouTube ad count
+  chrome.runtime.sendMessage({ action: "getTrackers", domain }, (response) => {
+    if (chrome.runtime.lastError) return;
+
+    const trackers = response?.trackers || [];
+    const youtubeAds = trackers.filter(
+      (t) =>
+        t.name.toLowerCase().includes("youtube") || t.category === "Advertising"
+    );
+
+    const youtubeAdsEl = document.getElementById("youtubeAdsBlocked");
+    if (youtubeAdsEl) {
+      youtubeAdsEl.textContent = youtubeAds.length;
+    }
+  });
+}
+
 // ===== AI Analysis Logic =====
 let aiAnalyzed = false;
 
@@ -467,3 +530,9 @@ async function analyzeWithAI() {
       "<span style='color:#f87171'>Sin conexión con IA.</span>";
   }
 }
+
+// Watermark: GC-mj9cmgyy
+// Build: mj9cmgyy
+
+// Watermark: GC-mj9e32q8
+// Build: mj9e32q8

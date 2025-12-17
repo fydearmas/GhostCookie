@@ -18,6 +18,7 @@
 **Ghost Cookie** es una extensión de navegador Chrome que protege la privacidad del usuario mediante:
 
 - **Bloqueo de trackers**: Detecta y bloquea más de 50 trackers conocidos
+- **Bloqueo de anuncios de YouTube**: Bloquea y salta automáticamente anuncios en videos de YouTube
 - **Gestión de cookies**: Visualiza, clasifica y elimina cookies
 - **Score de privacidad**: Calcula un score de 0-100 basado en trackers y cookies
 - **Clasificación inteligente**: Categoriza cookies automáticamente (Esencial, Funcional, Tracking, Publicidad)
@@ -44,13 +45,14 @@ plugin_browser/
 │   └── icon128.png              # 128x128 - Chrome Web Store
 ├── popup/                        # Interfaz principal (popup)
 │   ├── popup.html               # Estructura HTML del popup
-│   ├── popup.css                # Estilos del popup
+│   ├── popup.css                # Estilos del popup (incluye YouTube indicator)
 │   └── popup.js                 # Lógica del popup (ES6 module)
 ├── background/                   # Scripts de fondo
 │   ├── service-worker.js        # Service worker principal
 │   └── tracker-list.js          # Base de datos de trackers
 ├── content/                      # Scripts inyectados en páginas
-│   └── content.js               # Detector de trackers inline
+│   ├── content.js               # Detector de trackers inline
+│   └── youtube-adblocker.js     # Bloqueador específico de YouTube (NUEVO v1.1.0)
 ├── options/                      # Página de configuración
 │   ├── options.html             # Interfaz de opciones
 │   ├── options.css              # Estilos de opciones
@@ -58,7 +60,7 @@ plugin_browser/
 ├── utils/                        # Utilidades compartidas
 │   └── cookie-classifier.js     # Clasificador de cookies
 └── rules/                        # Reglas de bloqueo
-    └── tracker_rules.json       # Reglas declarativeNetRequest
+    └── tracker_rules.json       # Reglas declarativeNetRequest (40 reglas)
 ```
 
 ---
@@ -299,6 +301,131 @@ document.addEventListener("DOMContentLoaded", () => {
 
 ---
 
+### 4. YouTube Ad Blocker (content/youtube-adblocker.js) **[NUEVO v1.1.0]**
+
+**Propósito**: Bloquea y salta automáticamente anuncios en YouTube
+
+#### Características Principales
+
+##### Bloqueo de Anuncios
+
+- **Pre-roll ads**: Anuncios antes del video
+- **Mid-roll ads**: Anuncios durante el video
+- **Post-roll ads**: Anuncios después del video
+- **Banner ads**: Anuncios en la sidebar
+- **Overlay ads**: Anuncios superpuestos en el video
+- **Sponsored content**: Contenido promocionado
+
+##### Técnicas de Bloqueo
+
+**1. Inyección de CSS**
+
+```javascript
+function injectAdBlockCSS() {
+  const style = document.createElement("style");
+  style.textContent = `
+    .video-ads, .ytp-ad-module, 
+    ytd-display-ad-renderer { display: none !important; }
+  `;
+  document.head.appendChild(style);
+}
+```
+
+**2. Eliminación del DOM**
+
+```javascript
+function removeAdElements() {
+  AD_SELECTORS.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((el) => {
+      el.parentNode.removeChild(el);
+    });
+  });
+}
+```
+
+**3. Auto-Skip de Anuncios**
+
+```javascript
+function skipVideoAd() {
+  const skipButton = document.querySelector(".ytp-skip-ad-button");
+  if (skipButton) {
+    skipButton.click(); // Click automático
+  } else {
+    // Si no hay botón, acelerar el anuncio
+    video.currentTime = video.duration;
+  }
+}
+```
+
+**4. MutationObserver**
+
+```javascript
+function observeDynamicAds() {
+  const observer = new MutationObserver((mutations) => {
+    // Detecta anuncios añadidos dinámicamente
+    scanForAds();
+  });
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
+}
+```
+
+#### Selectores de Anuncios
+
+```javascript
+const AD_SELECTORS = [
+  ".video-ads",
+  ".ytp-ad-module",
+  ".ytp-ad-overlay-container",
+  "ytd-display-ad-renderer",
+  "ytd-promoted-sparkles-web-renderer",
+  "#masthead-ad",
+  ".ytd-merch-shelf-renderer",
+  // ... 15+ selectores
+];
+```
+
+#### Monitoreo del Player
+
+```javascript
+function monitorPlayer() {
+  const player = document.querySelector(".html5-video-player");
+  if (player.classList.contains("ad-showing")) {
+    skipVideoAd();
+    removeOverlays();
+  }
+}
+```
+
+#### Detección de Navegación SPA
+
+```javascript
+// YouTube es una Single Page Application
+let lastUrl = location.href;
+new MutationObserver(() => {
+  if (location.href !== lastUrl) {
+    lastUrl = location.href;
+    scanForAds(); // Re-escanear en nueva página
+  }
+}).observe(document, { subtree: true, childList: true });
+```
+
+#### Reportar Estadísticas
+
+```javascript
+function reportAd(name, category, url) {
+  chrome.runtime.sendMessage({
+    action: "trackerDetected",
+    domain: domain,
+    tracker: { name, category, url },
+  });
+}
+```
+
+---
+
 ### 5. Cookie Classifier (utils/cookie-classifier.js)
 
 **Propósito**: Clasificación inteligente de cookies sin IA
@@ -405,11 +532,20 @@ const COOKIE_PATTERNS = {
 
 #### Trackers Bloqueados
 
+**Total: 40 reglas de bloqueo**
+
 - Google Analytics, Tag Manager, Ads
 - Facebook Pixel
 - DoubleClick
 - Hotjar, Mixpanel, Amplitude
 - Criteo, Taboola, Outbrain
+- **YouTube Ads** (10 reglas - IDs 31-40):
+  - `youtube.com/api/stats/ads`
+  - `youtube.com/pagead/`
+  - `youtube.com/ptracking`
+  - `youtube.com/get_midroll_info`
+  - `s.ytimg.com/yts/jsbin/www-pagead`
+  - Y más...
 - Y 30+ más...
 
 ---
@@ -550,9 +686,22 @@ Cuando modifiques el código:
    - Compara entre sitios (CNN vs Google)
 
 4. **Options Page**:
+
    - Clic en ⚙️
    - Verifica que abra página de opciones
    - Prueba guardar configuración
+
+5. **YouTube Ad Blocking** **[NUEVO v1.1.0]**:
+
+   - Navega a [youtube.com](https://youtube.com)
+   - Reproduce un video con anuncios
+   - Verifica que:
+     - Los anuncios pre-roll se bloquean/saltan
+     - Los banners laterales desaparecen
+     - Los overlays no se muestran
+   - Abre el popup en YouTube
+   - Verifica el indicador "📺 YouTube Ad Blocker Activo"
+   - Confirma que el contador de anuncios aumenta
 
 ---
 
@@ -639,9 +788,10 @@ F12 en la página web → Console
 
 ## 👥 Créditos
 
-- **Desarrollador**: Ghost Cookie Team
-- **Versión**: 1.0.0
-- **Licencia**: MIT (pendiente)
+- **Desarrollador**: Franky Solutions
+- **Versión**: 1.1.0 (YouTube Ad Blocker)
+- **Fecha**: Diciembre 2025
+- **Licencia**: MIT
 
 ---
 

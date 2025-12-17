@@ -1,4 +1,4 @@
-# 🔐 Ghost Cookie - Sistema de Protección Implementado
+# 🔐 Ghost Cookie v1.1.0 - Sistema de Protección Implementado
 
 ## ✅ Protecciones Activas
 

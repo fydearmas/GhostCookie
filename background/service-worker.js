@@ -2,6 +2,17 @@
  * Ghost Cookie v1.0.0
  * Copyright (c) 2025 Franky Solutions
  * Developed by: Franky Solutions
+ * Build: mj9e32q8
+ * Watermark: GC-mj9e32q8
+ * 
+ * This code is protected by copyright.
+ * Unauthorized use is prohibited.
+ */
+
+/**
+ * Ghost Cookie v1.0.0
+ * Copyright (c) 2025 Franky Solutions
+ * Developed by: Franky Solutions
  * Build: mizdukir
  * Watermark: GC-mizdukir
  *
@@ -115,6 +126,32 @@ const TRACKER_PATTERNS = [
   { pattern: "omtrdc.net", name: "Adobe Analytics", category: "Analytics" },
   { pattern: "chartbeat.com", name: "Chartbeat", category: "Analytics" },
   { pattern: "parsely.com", name: "Parse.ly", category: "Analytics" },
+  // YouTube Ads
+  {
+    pattern: "youtube.com/api/stats/ads",
+    name: "YouTube Ads",
+    category: "Advertising",
+  },
+  {
+    pattern: "youtube.com/pagead/",
+    name: "YouTube Ads",
+    category: "Advertising",
+  },
+  {
+    pattern: "youtube.com/ptracking",
+    name: "YouTube Tracking",
+    category: "Advertising",
+  },
+  {
+    pattern: "youtube.com/get_midroll_info",
+    name: "YouTube Video Ads",
+    category: "Advertising",
+  },
+  {
+    pattern: "s.ytimg.com/yts/jsbin/www-pagead",
+    name: "YouTube Ads Script",
+    category: "Advertising",
+  },
 ];
 
 // ===== State Management =====
@@ -353,3 +390,9 @@ function getDomainFromUrl(url) {
 
 // ===== Initialization =====
 updateBadge();
+
+// Watermark: GC-mj9cmgyy
+// Build: mj9cmgyy
+
+// Watermark: GC-mj9e32q8
+// Build: mj9e32q8

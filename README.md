@@ -13,6 +13,7 @@ Navega como un fantasma: bloquea trackers, gestiona cookies y protege tu privaci
 ## ✨ Características
 
 - 🚫 **Bloqueo de Trackers**: Detecta y bloquea 50+ trackers conocidos (Google Analytics, Facebook Pixel, etc.)
+- 📺 **Bloqueo de Anuncios de YouTube**: Bloquea y salta automáticamente anuncios en videos de YouTube
 - 🍪 **Gestión de Cookies**: Visualiza, clasifica y elimina cookies fácilmente
 - 🛡️ **Score de Privacidad**: Calcula un score de 0-100 basado en trackers y cookies del sitio
 - 🏷️ **Clasificación Inteligente**: Categoriza cookies automáticamente (Esencial, Funcional, Tracking, Publicidad)
@@ -162,6 +163,7 @@ Ghost Cookie bloquea más de 50 trackers conocidos, incluyendo:
 - AdRoll
 - Amazon Ads
 - PubMatic
+- **YouTube Ads** (pre-roll, mid-roll, banners, overlays)
 
 ### Redes Sociales
 

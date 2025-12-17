@@ -11,7 +11,12 @@
   --text-muted: #6a6a7a;
   --accent-primary: #6366f1;
   --accent-secondary: #8b5cf6;
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+  --accent-gradient: linear-gradient(
+    135deg,
+    #6366f1 0%,
+    #8b5cf6 50%,
+    #a855f7 100%
+  );
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -635,7 +640,8 @@ body {
 }
 
 @keyframes statusPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -647,7 +653,11 @@ body {
 .developer-signature {
   text-align: center;
   padding: 12px 20px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.05) 0%,
+    rgba(139, 92, 246, 0.05) 100%
+  );
   border-top: 1px solid var(--border-color);
   font-size: 11px;
   color: var(--text-muted);
@@ -709,7 +719,58 @@ body {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
+/* ===== YouTube Indicator ===== */
+.youtube-indicator {
+  margin: 0 20px 16px;
+  padding: 14px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 0, 0, 0.1) 0%,
+    rgba(204, 0, 0, 0.05) 100%
+  );
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: var(--radius-md);
+  animation: fadeIn 0.4s ease-out;
+}
+
+.youtube-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.youtube-icon {
+  font-size: 20px;
+}
+
+.youtube-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff0000;
+}
+
+.youtube-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.youtube-stat-label {
+  color: var(--text-secondary);
+}
+
+.youtube-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff0000;
+}
