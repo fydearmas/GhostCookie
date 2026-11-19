@@ -49,7 +49,7 @@ function Resolve-BuildTool {
         }
         return (Resolve-Path -LiteralPath $ExplicitPath).Path
     }
-    $installed = Get-Command $Command -CommandType Application -ErrorAction SilentlyContinue
+    $installed = Get-Command $Command -CommandType Application -TotalCount 1 -ErrorAction SilentlyContinue
     if ($installed) { return $installed.Source }
     foreach ($candidate in $Candidates) {
         if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
@@ -77,7 +77,7 @@ if ($version -notmatch '^\d+\.\d+\.\d+(\.\d+)?$') {
     throw "manifest.json necesita una versión numérica válida para Windows."
 }
 
-$python = (Get-Command python.exe -CommandType Application).Source
+$python = (Get-Command python.exe -CommandType Application -TotalCount 1).Source
 Invoke-Tool $python @("-c", "import platform,struct,tkinter; assert struct.calcsize('P') == 8 and platform.machine().lower() in ('amd64', 'x86_64'), 'Se necesita Python x64'")
 
 $programFiles86 = [Environment]::GetFolderPath("ProgramFilesX86")

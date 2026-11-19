@@ -136,8 +136,12 @@ fi
 codesign --force "${signing_options[@]}" "$helper"
 codesign --force "${signing_options[@]}" "$app"
 codesign --verify --strict --deep --verbose=2 "$app"
-lipo -verify_arch "$arch" "$app/Contents/MacOS/$app_name"
-lipo -verify_arch "$arch" "$helper"
+for binary in "$app/Contents/MacOS/$app_name" "$helper"; do
+  if [[ "$(lipo -archs "$binary")" != "$arch" ]]; then
+    echo "Arquitectura inesperada: $binary" >&2
+    exit 1
+  fi
+done
 # Exercise the frozen command line without touching the browser or keychain.
 "$helper" --help >/dev/null
 
