@@ -73,6 +73,10 @@ child.stderr.on('data', data => { errorLog = (errorLog + data).slice(-3000); });
 let serial = 0;
 let incoming = '';
 const handlers = new Map();
+child.once('exit', (code, signal) => {
+  for (const handler of handlers.values()) handler({error: {message: 'Browser exited: ' + (signal ?? code)}});
+  handlers.clear();
+});
 for (const fd of [3, 4]) child.stdio[fd].on('error', () => {});
 child.stdio[4].setEncoding('utf8');
 child.stdio[4].on('data', chunk => {
@@ -91,7 +95,12 @@ child.stdio[4].on('data', chunk => {
 function send(method, params = {}, sessionId) {
   const id = ++serial;
   return new Promise((accept, reject) => {
-    const timer = setTimeout(() => reject(new Error('CDP timeout: ' + method)), 8000);
+    // A fresh hosted runner can take several seconds to start the browser.
+    const timeout = method === 'Browser.getVersion' ? 45000 : 8000;
+    const timer = setTimeout(() => {
+      handlers.delete(id);
+      reject(new Error('CDP timeout: ' + method));
+    }, timeout);
     handlers.set(id, message => {
       clearTimeout(timer);
       if (message.error) reject(new Error(method + ': ' + JSON.stringify(message.error)));
