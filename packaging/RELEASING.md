@@ -23,6 +23,6 @@ El flujo de GitHub usa el entorno **desktop-signing**. Configura allí los sigui
 | Windows | **WINDOWS_SIGNING_THUMBPRINT** | **WINDOWS_SIGNING_PFX_BASE64**, **WINDOWS_SIGNING_PFX_PASSWORD** |
 | macOS | **MACOS_APPLICATION_IDENTITY**, **MACOS_INSTALLER_IDENTITY**, **MACOS_NOTARY_KEY_ID**, **MACOS_NOTARY_ISSUER** | **MACOS_SIGNING_P12_BASE64**, **MACOS_SIGNING_P12_PASSWORD**, **MACOS_NOTARY_API_KEY_BASE64** |
 
-El PKCS#12 de macOS debe incluir **Developer ID Application** y **Developer ID Installer**. El perfil de notarización usa una clave de equipo de App Store Connect. Si la firma de Windows se realiza mediante un servicio compatible con SignTool, usa la alternativa descrita en la guía de Windows. El flujo se ejecuta sin firma en ramas **codex/release-***. Las compilaciones de prueba generan paquetes etiquetados como **unsigned** con IDs de prueba cuando faltan los oficiales.
+El PKCS#12 de macOS debe incluir **Developer ID Application** y **Developer ID Installer**. El perfil de notarización usa una clave de equipo de App Store Connect. Si la firma de Windows se realiza mediante un servicio compatible con SignTool, usa la alternativa descrita en la guía de Windows. El flujo se ejecuta sin firma en ramas **ghostcookie/release-***. Las compilaciones de prueba generan paquetes etiquetados como **unsigned** con IDs de prueba cuando faltan los oficiales.
 
 [Compilar para Windows](windows/README.md) · [Compilar para macOS](macos/README.md)

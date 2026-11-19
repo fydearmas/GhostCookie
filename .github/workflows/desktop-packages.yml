@@ -2,7 +2,7 @@ name: Ghost Cookie desktop packages
 
 on:
   push:
-    branches: ['codex/release-*']
+    branches: ['ghostcookie/release-*']
   workflow_dispatch:
     inputs:
       signed:
