@@ -63,15 +63,18 @@ function render(response) {
   sitePause.hidden = !site || !protection.enabled;
   const protectionStatus = byId("protectionStatus");
   if (protection.partial) status(protectionStatus, "Estado de protección incompleto", "warn");
-  else if (!protection.enabled) status(protectionStatus, "Protección global en pausa", "warn");
-  else if (site?.pause) status(protectionStatus, "Anuncios y rastreo en pausa en este sitio", "warn");
-  else status(protectionStatus, "Protección activa", "good");
+  else if (!protection.enabled) status(protectionStatus, "En pausa global", "warn");
+  else if (site?.pause) status(protectionStatus, "En pausa en este sitio", "warn");
+  else status(protectionStatus, "Activa", "good");
+  byId("phishingActive").hidden = !protection.enabled || !site?.pause;
   if (!site) return;
 
   sitePause.textContent = site.pause && site.pause !== site.host ? "Reanudar " + site.pause
     : site.pause ? "Reanudar en este sitio" : "Pausar en este sitio";
-  byId("trackersBlocked").textContent = site.blocked ?? "—";
-  byId("trackersBlocked").title = site.blocked === null ? "Chrome aún no ofrece datos de bloqueo para esta página." : "";
+  const blocked = byId("trackersBlocked");
+  blocked.textContent = site.blocked ?? "Sin datos";
+  blocked.toggleAttribute("data-unavailable", site.blocked === null);
+  blocked.title = site.blocked === null ? "El navegador aún no ofrece datos de bloqueo para esta página." : "";
   byId("trackersDetected").textContent = site.detections.length;
   byId("elementsHidden").textContent = site.hidden;
   byId("cookiesCount").textContent = site.cookies?.length ?? "—";

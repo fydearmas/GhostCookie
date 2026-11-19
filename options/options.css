@@ -5,7 +5,13 @@
 .setting { cursor: pointer; display: flex; align-items: center; gap: .6rem; min-height: 30px; }
 .setting input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--violet); }
 .settings-card summary { color: var(--violet); }
-.paused-list { max-height: 10rem; overflow: auto; padding-inline-start: 1.25rem; overflow-wrap: anywhere; }
+.list-versions h3 { margin: 0; font-size: .9rem; }
+.list-versions dl { display: grid; gap: .3rem; margin: .5rem 0 0; }
+.list-versions dl div, .paused-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .4rem 1rem; }
+.list-versions dd { margin: 0; color: var(--muted); }
+.paused-list { display: grid; gap: .35rem; max-height: 14rem; margin: .45rem 0; padding: .2rem; overflow: auto; list-style: none; overflow-wrap: anywhere; }
+.paused-list .button { min-height: 44px; }
+#pausedEmpty { margin-block: .45rem; }
 .setup-steps { margin-block: 0; padding-inline-start: 1.35rem; }
 .setup-steps li + li { margin-top: .35rem; }
 .identifier { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; }

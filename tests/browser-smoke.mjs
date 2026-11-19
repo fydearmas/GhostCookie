@@ -41,9 +41,13 @@ const fixture = createServer((request, response) => {
     response.end('window.fixtureScriptLoaded = (window.fixtureScriptLoaded ?? 0) + 1;');
     return;
   }
-  if (request.url === '/') response.setHeader('Set-Cookie', 'sample_session=fixture; Path=/; SameSite=Lax');
-  const port = fixture.address().port;
   response.setHeader('Content-Type', 'text/html');
+  if (request.url !== '/') {
+    response.end('<!doctype html><title>Página sin solicitudes externas</title><h1>Página de control</h1>');
+    return;
+  }
+  response.setHeader('Set-Cookie', 'sample_session=fixture; Path=/; SameSite=Lax');
+  const port = fixture.address().port;
   response.end('<!doctype html><title>Ghost Cookie fixture</title><main id="content">Contenido</main>'
     + '<aside id="test-ad" class="' + cosmeticSelector.slice(1) + '">Anuncio</aside>'
     + '<script src="http://doubleclick.net:' + port + '/advert.js"></script>'
@@ -164,12 +168,25 @@ try {
   console.log(product, version, 'bloquea anuncios y rastreo de red y oculta un anuncio visual');
 
   const popup = await openPopup(id, siteUrl);
+  assert.equal(await evaluate(popup, 'document.querySelector("#protectionStatus").textContent'), 'Activa');
+  assert.equal(await evaluate(popup, 'document.querySelector("#trackersBlocked").textContent'), '2');
+  const activeSite = await evaluate(popup, 'chrome.runtime.sendMessage({action: "popup:get"}).then(result => result.site)');
+  await evaluate(settings, 'chrome.storage.session.remove("document:' + activeSite.tabId + '")');
+  await evaluate(popup, 'document.querySelector("#refresh").click()');
+  await until(() => evaluate(popup, '!document.querySelector("#refresh").disabled'), 'popup updated without a navigation record');
+  assert.equal(await evaluate(popup, 'document.querySelector("#trackersBlocked").textContent'), '2');
+  await evaluate(settings, `(async () => {
+    for (const enabled of [false, true]) {
+      await chrome.tabs.sendMessage(${activeSite.tabId}, {action: "content:policy", enabled}, {documentId: "${activeSite.documentId}"});
+    }
+  })()`);
   await until(async () => {
     const detections = await evaluate(popup, 'Number(document.querySelector("#trackersDetected").textContent)');
     if (detections >= 2) return true;
     await evaluate(popup, 'document.querySelector("#refresh").click()');
     return false;
   }, 'popup detects known scripts');
+  assert.equal(await evaluate(popup, 'document.querySelector("#trackersBlocked").textContent'), '2');
   assert.match(await evaluate(popup, 'document.querySelector("#riskStatus").textContent'), /Señales para revisar/);
   assert.match(await evaluate(popup, 'document.querySelector("#riskIndicators").textContent'), /HTTPS/i);
   await evaluate(popup, 'document.querySelector("#tabCookies").click()');
@@ -185,7 +202,44 @@ try {
   await until(() => evaluate(popup, '!document.querySelector("#sitePause").disabled'), 'pause command completed');
   await evaluate(popup, 'document.querySelector("#sitePause").click()');
   await until(() => evaluate(tab, adDisplay + ' === "none"'), 'resume hides ad again');
-  console.log(product, 'muestra detecciones y reputación, elimina cookies y pausa y reanuda sin recargar');
+  console.log(product, 'muestra el recuento sin depender del registro visual, elimina cookies y pausa y reanuda sin recargar');
+
+  const cleanUrl = siteUrl + 'empty';
+  await send('Page.navigate', {url: cleanUrl}, tab);
+  await until(() => evaluate(tab, 'location.href === ' + JSON.stringify(cleanUrl)), 'documento de control');
+  const cleanPopup = await openPopup(id, cleanUrl);
+  assert.equal(await evaluate(cleanPopup, 'document.querySelector("#trackersBlocked").textContent'), '0');
+  await evaluate(cleanPopup, 'document.querySelector("#sitePause").click()');
+  await until(() => evaluate(cleanPopup, 'document.querySelector("#protectionStatus").textContent === "En pausa en este sitio" && !document.querySelector("#phishingActive").hidden'), 'pausa por sitio visible');
+
+  const secondUrl = 'http://localhost:' + port + '/empty';
+  await send('Page.navigate', {url: secondUrl}, tab);
+  await until(() => evaluate(tab, 'location.href === ' + JSON.stringify(secondUrl)), 'segundo sitio de control');
+  // A background tab can load the popup HTML without granting activeTab, unlike the toolbar action.
+  const {targetId: ungrantedPopupTarget} = await send('Target.createTarget', {
+    url: 'chrome-extension://' + id + '/popup/popup.html', background: true,
+  });
+  const ungrantedPopup = await attach(ungrantedPopupTarget);
+  await until(() => evaluate(ungrantedPopup, 'document.querySelector("#currentSite")?.textContent === "localhost"'), 'popup sin permiso temporal');
+  assert.equal(await evaluate(ungrantedPopup, 'document.querySelector("#trackersBlocked").textContent'), 'Sin datos');
+  await send('Target.closeTarget', {targetId: ungrantedPopupTarget});
+  const secondPopup = await openPopup(id, secondUrl);
+  assert.equal(await evaluate(secondPopup, 'document.querySelector("#protectionStatus").textContent'), 'Activa');
+  await evaluate(secondPopup, 'document.querySelector("#sitePause").click()');
+  await until(() => evaluate(secondPopup, 'document.querySelector("#protectionStatus").textContent === "En pausa en este sitio"'), 'segunda pausa');
+
+  await send('Page.reload', {}, settings);
+  await until(() => evaluate(settings, 'document.querySelectorAll("#pausedSites button").length === 2'), 'ambos sitios en Ajustes');
+  const dates = ["rules/easylist.lock.json", "reputation/source.json"];
+  const [easy, phish] = await Promise.all(dates.map(path => readFile(resolve(unpacked, path), 'utf8').then(JSON.parse)));
+  const date = new Intl.DateTimeFormat('es', {dateStyle: 'medium', timeZone: 'UTC'});
+  for (const [id, value] of [['easyListDate', easy.revisionUtc], ['phishListDate', phish.snapshotDate]]) {
+    await until(() => evaluate(settings, 'document.getElementById(' + JSON.stringify(id) + ')?.textContent === ' + JSON.stringify(date.format(new Date(value)))), id + ' muestra la fecha empaquetada');
+  }
+  const firstResumeLabel = JSON.stringify('Reanudar ' + fixtureHost);
+  await evaluate(settings, 'document.querySelector("#pauseDetails").open = true; [...document.querySelectorAll("#pausedSites button")].find(button => button.ariaLabel === ' + firstResumeLabel + ').click()');
+  await until(() => evaluate(settings, 'document.querySelectorAll("#pausedSites button").length === 1 && document.querySelector("#pausedSites button").ariaLabel === "Reanudar localhost"'), 'reanudar conserva la otra pausa');
+  console.log(product, 'distingue cero de sin datos, muestra las fechas instaladas y reanuda un dominio');
 
   const warning = 'chrome-extension://' + id + '/reputation/warning.html';
   await send('Page.navigate', {url: 'http://' + phishingHost + ':' + port + '/'}, tab);
@@ -195,6 +249,11 @@ try {
   assert.ok(await evaluate(settings, 'document.querySelector("#connectNative").textContent.includes("Autorizar") && document.querySelector("#checkNative").disabled'));
   await evaluate(settings, 'document.querySelector("#globalProtection").click()');
   await until(() => evaluate(settings, 'chrome.declarativeNetRequest.getEnabledRulesets().then(rules => rules.length === 0)'), 'global protection disables rules');
+  await send('Page.navigate', {url: secondUrl}, tab);
+  await until(() => evaluate(tab, 'location.href === ' + JSON.stringify(secondUrl)), 'sitio con pausa global');
+  const disabledPopup = await openPopup(id, secondUrl);
+  assert.equal(await evaluate(disabledPopup, 'document.querySelector("#protectionStatus").textContent'), 'En pausa global');
+  assert.ok(await evaluate(disabledPopup, 'document.querySelector("#phishingActive").hidden'));
   await until(() => evaluate(settings, '!document.querySelector("#globalProtection").disabled'), 'global command completed');
   await evaluate(settings, 'document.querySelector("#globalProtection").click()');
   await until(() => evaluate(settings, 'chrome.declarativeNetRequest.getEnabledRulesets().then(rules => rules.length === 4)'), 'global protection restores four rulesets');

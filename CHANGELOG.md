@@ -9,6 +9,9 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 - Retirados del repositorio el ZIP de la 1.0.0, la caché de Chrome y archivos de desarrollo en desuso.
 - El ZIP de la extensión incluye los archivos de ejecución y los avisos de licencias y de procedencia. Las guías se consultan en GitHub.
 - Corregido el borrado de cookies particionadas en páginas HTTP locales como `localhost`.
+- GitHub Actions prepara cada semana nuevas revisiones de EasyList, EasyPrivacy y PhishDestroy y propone los cambios validados en un PR.
+- El contador del popup usa las coincidencias del documento activo y distingue **0** de **Sin datos**.
+- El popup resalta el estado de protección. Ajustes muestra las fechas de las listas instaladas y permite reanudar cada dominio.
 
 ## [1.3.0] - 2026-11-18
 

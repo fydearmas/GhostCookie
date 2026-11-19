@@ -18,10 +18,17 @@
       <h2 id="filtersHeading">Protección</h2>
       <label class="setting"><input id="globalProtection" type="checkbox" disabled> Activar filtros y avisos de phishing</label>
       <label class="setting"><input id="classifyCookies" type="checkbox" disabled> Mostrar categorías estimadas de cookies</label>
-      <p class="muted">EasyList y EasyPrivacy complementan los filtros de Ghost Cookie. Los avisos usan una copia local de PhishDestroy.</p>
+      <section class="list-versions" aria-labelledby="listVersionsHeading">
+        <h3 id="listVersionsHeading">Listas instaladas</h3>
+        <dl>
+          <div><dt>EasyList y EasyPrivacy</dt><dd id="easyListDate">Consultando…</dd></div>
+          <div><dt>PhishDestroy</dt><dd id="phishListDate">Consultando…</dd></div>
+        </dl>
+      </section>
       <details id="pauseDetails">
         <summary id="pausedSummary">Sitios en pausa</summary>
         <ul id="pausedSites" class="paused-list"></ul>
+        <p id="pausedEmpty" class="muted" hidden>No hay sitios en pausa.</p>
         <button id="resetPauses" class="button quiet" disabled>Reanudar todos los sitios</button>
       </details>
       <p id="protectionStatus" class="status" role="status"></p>
