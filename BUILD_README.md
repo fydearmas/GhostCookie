@@ -8,7 +8,7 @@ npm run build
 
 El comando empaqueta una copia del código y las listas compiladas. Genera los ZIP de la extensión y el asistente y un archivo de sumas SHA-256 en **dist/**. Se pueden comparar ejecuciones consecutivas del build sin modificar los archivos fuente.
 
-El ZIP de la extensión se carga descomprimido en Chrome. El ZIP del asistente se instala por separado según **native/README.md**. Conserva ambas sumas SHA-256 junto con los paquetes que distribuyas.
+El ZIP de la extensión se carga descomprimido en Chrome. El ZIP del asistente se instala por separado según **native/README.md**. Conserva ambas sumas SHA-256 junto con los paquetes que distribuyas. Las guías y el historial de cambios se consultan en el repositorio. El ZIP de la extensión incluye las licencias y los avisos de procedencia.
 
 ## Verificación
 

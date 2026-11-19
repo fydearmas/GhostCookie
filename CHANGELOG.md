@@ -4,6 +4,11 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 
 ---
 
+## [1.3.1]
+
+- Retirados del repositorio el ZIP de la 1.0.0, la caché de Chrome y archivos de desarrollo en desuso.
+- El ZIP de la extensión incluye los archivos de ejecución y los avisos de licencias y de procedencia. Las guías se consultan en GitHub.
+
 ## [1.3.0] - 2026-11-18
 
 - Configuración gráfica del asistente de Gemini para Windows y macOS y registro para Chrome y Microsoft Edge.

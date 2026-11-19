@@ -38,7 +38,7 @@ El análisis con Gemini es opcional. Requiere instalar el asistente de escritori
 
 ## Archivos para los paneles
 
-- Sube **dist/ghost-cookie-v1.3.0.zip** como paquete de la extensión.
+- Sube **dist/ghost-cookie-v1.3.1.zip** como paquete de la extensión.
 - Sube **settings-es.png** como captura de escritorio y **tile-440x280.png** para la imagen promocional de Chrome Web Store.
 - Comprueba que el enlace de privacidad y el de descargas se pueden abrir sin iniciar sesión antes de enviar a revisión. El asistente se publica como artefacto de GitHub Releases.
 
