@@ -1,88 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=500, initial-scale=1.0">
-  <title>Ghost Cookie - Opciones</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ajustes de Ghost Cookie</title>
+  <link rel="stylesheet" href="../popup/theme.css">
   <link rel="stylesheet" href="options.css">
 </head>
-<body>
-  <div class="container">
-    <header class="header">
-      <div class="logo">
-        <img src="../icons/icon48.png" alt="Ghost Cookie" class="logo-icon">
-        <div class="logo-text">
-          <h1>Ghost Cookie</h1>
-          <span class="tagline">Configuración</span>
-        </div>
-      </div>
+<body class="standalone">
+  <main class="settings-shell options-shell">
+    <header class="settings-header">
+      <img src="../icons/icon48.png" width="44" height="44" alt="">
+      <div><p class="section-label">Ghost Cookie <span id="version"></span></p><h1>Ajustes</h1></div>
     </header>
 
-    <!-- Privacy Score Settings -->
-    <section class="section">
-      <h2>🛡️ Score de Privacidad</h2>
-      <p class="description">El score de privacidad analiza automáticamente cada sitio basándose en la cantidad de trackers y cookies.</p>
-      <label class="toggle-option">
-        <input type="checkbox" id="showPrivacyScore" checked>
-        <span class="toggle-label">Mostrar score de privacidad en el popup</span>
-      </label>
+    <section class="settings-card" aria-labelledby="filtersHeading">
+      <h2 id="filtersHeading">Protección</h2>
+      <label class="setting"><input id="globalProtection" type="checkbox" disabled> Activar filtros y avisos de phishing</label>
+      <label class="setting"><input id="classifyCookies" type="checkbox" disabled> Mostrar categorías estimadas de cookies</label>
+      <p class="muted">EasyList y EasyPrivacy complementan los filtros de Ghost Cookie. Los avisos usan una copia local de PhishDestroy.</p>
+      <details id="pauseDetails">
+        <summary id="pausedSummary">Sitios en pausa</summary>
+        <ul id="pausedSites" class="paused-list"></ul>
+        <button id="resetPauses" class="button quiet" disabled>Reanudar todos los sitios</button>
+      </details>
+      <p id="protectionStatus" class="status" role="status"></p>
     </section>
 
-    <!-- Cookie Analysis -->
-    <section class="section">
-      <h2>🍪 Análisis de Cookies</h2>
-      <p class="description">Clasifica automáticamente las cookies en categorías: Esencial, Funcional, Tracking, Publicidad.</p>
-      <label class="toggle-option">
-        <input type="checkbox" id="classifyCookies" checked>
-        <span class="toggle-label">Clasificar cookies automáticamente</span>
-      </label>
-    </section>
-
-    <!-- AI Integration (Optional) -->
-    <section class="section ai-section">
-      <h2>🤖 Integración con IA (Opcional)</h2>
-      <p class="description">Conecta con Gemini AI para análisis avanzado de privacidad. Necesitas tu propia API key gratuita.</p>
-      
-      <label class="toggle-option">
-        <input type="checkbox" id="enableAI">
-        <span class="toggle-label">Habilitar análisis con IA</span>
-      </label>
-
-      <div class="api-key-section" id="apiKeySection" style="display: none;">
-        <label for="geminiApiKey">API Key de Gemini:</label>
-        <div class="input-group">
-          <input type="password" id="geminiApiKey" placeholder="Tu API key aquí...">
-          <button id="toggleKeyVisibility" class="btn-icon" title="Mostrar/Ocultar">👁️</button>
-        </div>
-        <p class="hint">
-          <a href="https://makersuite.google.com/app/apikey" target="_blank">Obtener API key gratis →</a>
-        </p>
-        <button id="testApiKey" class="btn-secondary">Probar conexión</button>
-        <span id="apiStatus" class="status-message"></span>
+    <section class="settings-card" aria-labelledby="aiHeading">
+      <h2 id="aiHeading">Asistente local de Gemini</h2>
+      <p>Usa tu propia clave y la cuota de tu cuenta. El asistente local guarda la clave en el llavero del sistema.</p>
+      <ol class="setup-steps">
+        <li>Instala el asistente de tu sistema operativo.</li>
+        <li>Abre Ghost Cookie Assistant y guarda tu clave.</li>
+        <li>Autoriza el acceso y comprueba la conexión aquí.</li>
+      </ol>
+      <div class="form-actions">
+        <a class="button" href="https://github.com/fydearmas/GhostCookie/releases" target="_blank" rel="noopener noreferrer">Descargar asistente</a>
       </div>
+      <details>
+        <summary>Instalación manual y diagnóstico</summary>
+        <p class="muted manual-copy">Para Linux o una extensión descomprimida, registra este ID siguiendo la guía del paquete de código fuente.</p>
+        <div class="identifier"><code id="extensionId"></code><button id="copyId" class="button">Copiar ID</button></div>
+      </details>
+      <div class="form-actions">
+        <button id="connectNative" class="button primary">Autorizar asistente</button>
+        <button id="checkNative" class="button quiet" disabled>Comprobar</button>
+        <button id="disconnectNative" class="button quiet" hidden>Quitar permiso</button>
+      </div>
+      <p id="nativeStatus" class="status" role="status"></p>
     </section>
-
-    <!-- Data Management -->
-    <section class="section">
-      <h2>🗑️ Gestión de Datos</h2>
-      <button id="clearAllData" class="btn-danger">Borrar todos los datos guardados</button>
-      <p class="hint">Esto eliminará las estadísticas de trackers bloqueados y configuraciones.</p>
-    </section>
-
-    <!-- Save Button -->
-    <div class="actions">
-      <button id="saveSettings" class="btn-primary">💾 Guardar Configuración</button>
-      <span id="saveStatus" class="status-message"></span>
-    </div>
-
-    <footer class="footer">
-      <p>Ghost Cookie v1.0.0 - Navega como un fantasma 👻</p>
-      <p style="margin-top: 8px; font-size: 12px;">
-        Desarrollado por <a href="https://frankysolutions.com.br" target="_blank" style="color: #6366f1; text-decoration: none;">Franky Solutions</a>
-      </p>
-    </footer>
-  </div>
-
-  <script src="options.js"></script>
+  </main>
+  <script type="module" src="options.js"></script>
 </body>
 </html>

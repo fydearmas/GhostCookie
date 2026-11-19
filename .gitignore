@@ -22,3 +22,18 @@ Thumbs.db
 
 # Archivos de sistema
 desktop.ini
+
+# Paquetes generados y caché de Chrome
+dist/
+_metadata/
+__pycache__/
+
+# Credenciales de firma y temporales de empaquetado
+.env
+.env.*
+*.p8
+*.p12
+*.pfx
+*.keychain
+*.keychain-db
+/packaging/official-extension-ids.local.json

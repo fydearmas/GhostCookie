@@ -4,7 +4,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "google-analytics.com",
+      "urlFilter": "||google-analytics.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -13,7 +13,8 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "googletagmanager.com",
+      "urlFilter": "||googletagmanager.com^",
+      "domainType": "thirdParty",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -22,7 +23,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "facebook.net/*/fbevents.js",
+      "urlFilter": "||facebook.net^*/fbevents.js^",
       "resourceTypes": ["script"]
     }
   },
@@ -31,7 +32,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "connect.facebook.net",
+      "urlFilter": "||connect.facebook.net/signals/",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -40,7 +41,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "pixel.facebook.com",
+      "urlFilter": "||pixel.facebook.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -49,7 +50,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "hotjar.com",
+      "urlFilter": "||hotjar.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -58,7 +59,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "mixpanel.com",
+      "urlFilter": "||mixpanel.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -67,7 +68,8 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "segment.com",
+      "urlFilter": "||segment.com^",
+      "domainType": "thirdParty",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -76,7 +78,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "segment.io",
+      "urlFilter": "||segment.io^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -85,7 +87,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "amplitude.com",
+      "urlFilter": "||amplitude.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -94,7 +96,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "heapanalytics.com",
+      "urlFilter": "||heapanalytics.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -103,7 +105,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "clarity.ms",
+      "urlFilter": "||clarity.ms^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -112,7 +114,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "fullstory.com",
+      "urlFilter": "||fullstory.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -121,7 +123,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "doubleclick.net",
+      "urlFilter": "||doubleclick.net^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping", "sub_frame"]
     }
   },
@@ -130,7 +132,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "adsrvr.org",
+      "urlFilter": "||adsrvr.org^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -139,7 +141,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "adnxs.com",
+      "urlFilter": "||adnxs.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -148,7 +150,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "criteo.com",
+      "urlFilter": "||criteo.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -157,7 +159,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "taboola.com",
+      "urlFilter": "||taboola.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -166,7 +168,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "outbrain.com",
+      "urlFilter": "||outbrain.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -175,7 +177,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "linkedin.com/px",
+      "urlFilter": "||linkedin.com/px^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -184,7 +186,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "snap.licdn.com",
+      "urlFilter": "||snap.licdn.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -193,7 +195,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "ads.twitter.com",
+      "urlFilter": "||ads.twitter.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -202,7 +204,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "analytics.twitter.com",
+      "urlFilter": "||analytics.twitter.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -211,7 +213,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "tiktokcdn.com/tiktok/falcon",
+      "urlFilter": "||tiktokcdn.com/tiktok/falcon",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -220,7 +222,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "analytics.tiktok.com",
+      "urlFilter": "||analytics.tiktok.com^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -229,7 +231,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "intercom.io",
+      "urlFilter": "||api-iam.intercom.io/messenger/web/metrics",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -238,7 +240,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "hubspot.com",
+      "urlFilter": "||hubspot.com/tracking/",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -247,7 +249,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "hs-analytics.net",
+      "urlFilter": "||hs-analytics.net^",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -256,7 +258,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "salesforce.com/beacon",
+      "urlFilter": "||salesforce.com/beacon",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -265,7 +267,8 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "newrelic.com",
+      "urlFilter": "||newrelic.com^",
+      "domainType": "thirdParty",
       "resourceTypes": ["script", "xmlhttprequest", "image", "ping"]
     }
   },
@@ -274,7 +277,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "youtube.com/api/stats/ads",
+      "urlFilter": "||youtube.com/api/stats/ads^",
       "resourceTypes": ["xmlhttprequest", "ping"]
     }
   },
@@ -283,7 +286,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "youtube.com/pagead/",
+      "urlFilter": "||youtube.com/pagead/",
       "resourceTypes": ["script", "xmlhttprequest", "image", "sub_frame"]
     }
   },
@@ -292,7 +295,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "youtube.com/ptracking",
+      "urlFilter": "||youtube.com/ptracking^",
       "resourceTypes": ["xmlhttprequest", "ping", "image"]
     }
   },
@@ -301,7 +304,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "googlesyndication.com/pagead/",
+      "urlFilter": "||googlesyndication.com/pagead/",
       "resourceTypes": ["script", "xmlhttprequest", "image", "sub_frame"]
     }
   },
@@ -310,7 +313,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "googleadservices.com/pagead/",
+      "urlFilter": "||googleadservices.com/pagead/",
       "resourceTypes": ["script", "xmlhttprequest", "image", "sub_frame"]
     }
   },
@@ -319,7 +322,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "static.doubleclick.net",
+      "urlFilter": "||static.doubleclick.net^",
       "resourceTypes": ["script", "xmlhttprequest", "image"]
     }
   },
@@ -328,7 +331,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "youtube.com/get_midroll_info",
+      "urlFilter": "||youtube.com/get_midroll_info^",
       "resourceTypes": ["xmlhttprequest"]
     }
   },
@@ -337,7 +340,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "s.ytimg.com/yts/jsbin/www-pagead",
+      "urlFilter": "||s.ytimg.com/yts/jsbin/www-pagead",
       "resourceTypes": ["script"]
     }
   },
@@ -346,7 +349,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "youtube.com/api/stats/qoe",
+      "urlFilter": "||youtube.com/api/stats/qoe^",
       "resourceTypes": ["xmlhttprequest", "ping"]
     }
   },
@@ -355,7 +358,7 @@
     "priority": 2,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "youtube.com/youtubei/v1/log_event",
+      "urlFilter": "||youtube.com/youtubei/v1/log_event^",
       "resourceTypes": ["xmlhttprequest", "ping"]
     }
   }

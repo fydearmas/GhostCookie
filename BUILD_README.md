@@ -1,169 +1,26 @@
-# 🔐 Ghost Cookie v1.1.0 - Sistema de Protección Implementado
+# Empaquetar Ghost Cookie
 
-## ✅ Protecciones Activas
+Desde la raíz del repositorio, con Node.js y Python 3.10 o posterior:
 
-### 1. ✨ Marcas de Agua Digitales
+~~~sh
+npm run build
+~~~
 
-Cada archivo JavaScript ahora contiene:
+El comando empaqueta una copia del código y las listas compiladas. Genera los ZIP de la extensión y el asistente y un archivo de sumas SHA-256 en **dist/**. Se pueden comparar ejecuciones consecutivas del build sin modificar los archivos fuente.
 
-- **Copyright Header** con información legal
-- **Build ID único** para rastrear versiones
-- **Watermark personalizado** `GC-[timestamp]`
-- **Marca inline** al final de cada archivo
+El ZIP de la extensión se carga descomprimido en Chrome. El ZIP del asistente se instala por separado según **native/README.md**. Conserva ambas sumas SHA-256 junto con los paquetes que distribuyas.
 
-### 2. 🔒 Sistema de Integridad
+## Verificación
 
-- **Hashes SHA-256** de cada archivo
-- **build-info.json** con información de verificación
-- **Timestamps** de compilación
+~~~sh
+npm test
+python3 -B -m unittest discover -s native -v
+~~~
 
----
+La segunda línea es la alternativa directa al comando de npm. En Windows usa **py -3** para invocar Python.
 
-## 📦 Archivos Creados
+Prueba la extensión descomprimida en un perfil de Chrome de pruebas. Comprueba que la pausa restaura el contenido visual sin recargar el documento, que las solicitudes bloqueadas aparecen separadas de las detecciones, que las cookies normales y particionadas se pueden borrar y que la navegación hacia un destino de reputación de prueba muestra el aviso. Para validar el asistente, registra el ID del perfil de prueba y usa la comprobación de Ajustes antes de solicitar un análisis.
 
-| Archivo              | Propósito                            |
-| -------------------- | ------------------------------------ |
-| `build.js`           | Script principal de build            |
-| `package.json`       | Configuración de npm y scripts       |
-| `utils/watermark.js` | Sistema de verificación              |
-| `PROTECTION.md`      | Guía completa de protección          |
-| `.gitignore`         | Excluir archivos de build            |
-| `build-info.json`    | Información de integridad (generado) |
+Consulta [el aviso de EasyList](rules/THIRD_PARTY_NOTICES.md) y [la documentación técnica](DOCUMENTATION.md) para regenerar o actualizar los datos.
 
----
-
-## 🚀 Cómo Usar
-
-### Para Desarrollo (Código Sin Proteger)
-
-Trabaja normalmente con los archivos actuales. Ya tienen watermarks básicos.
-
-### Para Producción (Código Protegido)
-
-#### Paso 1: Añadir Watermarks
-
-```bash
-node build.js
-```
-
-Esto agregará headers de copyright y marcas de agua a todos los archivos.
-
-#### Paso 2: Ofuscar (Opcional)
-
-```bash
-npm run obfuscate
-```
-
-Esto creará versiones `.min.js` ofuscadas de todos los archivos.
-
-#### Paso 3: Usar Versiones Ofuscadas
-
-Si decides usar las versiones ofuscadas, actualiza:
-
-**manifest.json**:
-
-```json
-{
-  "background": {
-    "service_worker": "background/service-worker.min.js"
-  },
-  "content_scripts": [
-    {
-      "js": ["content/content.min.js"]
-    }
-  ]
-}
-```
-
-**popup.html**:
-
-```html
-<script type="module" src="popup.min.js"></script>
-```
-
-**options.html**:
-
-```html
-<script src="options.min.js"></script>
-```
-
----
-
-## 🔍 Verificar Protección
-
-### Ver Watermarks
-
-Abre cualquier archivo `.js` y verás:
-
-```javascript
-/**
- * Ghost Cookie v1.0.0
- * Copyright (c) 2025 Ghost Cookie Team
- * Build: [unique-id]
- * Watermark: GC-[unique-id]
- *
- * This code is protected by copyright.
- * Unauthorized use is prohibited.
- */
-```
-
-### Ver Hashes de Integridad
-
-Abre `build-info.json`:
-
-```json
-{
-  "version": "1.0.0",
-  "buildId": "...",
-  "watermark": "GC-...",
-  "timestamp": "2025-12-09T...",
-  "integrity": {
-    "popup/popup.js": "sha256-hash...",
-    ...
-  }
-}
-```
-
----
-
-## ⚠️ Importante
-
-### Para Desarrollo
-
-- **NO uses versiones ofuscadas** - dificulta el debugging
-- Trabaja con archivos normales
-- Los watermarks básicos ya están presentes
-
-### Para Publicación
-
-1. Ejecuta `node build.js`
-2. (Opcional) Ejecuta `npm run obfuscate`
-3. Guarda `build-info.json` en lugar seguro
-4. Prueba la extensión
-5. Publica
-
----
-
-## 🛡️ Nivel de Protección
-
-| Característica        | Estado        | Nivel  |
-| --------------------- | ------------- | ------ |
-| Copyright Headers     | ✅ Activo     | Básico |
-| Watermarks Digitales  | ✅ Activo     | Medio  |
-| Hashes de Integridad  | ✅ Activo     | Medio  |
-| Ofuscación (opcional) | ⚙️ Disponible | Alto   |
-
----
-
-## 📞 Próximos Pasos Recomendados
-
-1. **Publicar en Chrome Web Store** - Mayor protección
-2. **Registrar Copyright** - Protección legal formal
-3. **Crear Licencia** - Definir términos de uso
-4. **Monitorear Copias** - Buscar uso no autorizado
-
----
-
-**Estado**: ✅ Sistema de protección implementado y funcional
-
-Para más detalles, consulta [PROTECTION.md](./PROTECTION.md)
+Para preparar los instaladores de escritorio, obtener las firmas y cargar a las tiendas, consulta [el proceso de publicación](packaging/RELEASING.md).

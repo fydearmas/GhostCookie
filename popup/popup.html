@@ -1,143 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=400, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ghost Cookie</title>
+  <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <header class="header">
-      <div class="logo">
-        <img src="../icons/icon128.png" alt="Ghost Cookie" class="logo-icon">
-        <div class="logo-text">
-          <h1>Ghost Cookie</h1>
-          <span class="tagline">Navega como un fantasma</span>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button class="btn-settings" id="openSettings" title="Configuración">⚙️</button>
-        <label class="toggle-switch">
-          <input type="checkbox" id="protectionToggle" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
+  <main class="popup-shell">
+    <header class="topbar">
+      <div class="wordmark"><img src="../icons/icon48.png" width="30" height="30" alt="">Ghost Cookie</div>
+      <button id="openSettings" class="button quiet">Ajustes</button>
     </header>
 
-    <!-- Stats Cards -->
-    <div class="stats-container">
-      <div class="stat-card trackers">
-        <div class="stat-icon">🚫</div>
-        <div class="stat-info">
-          <span class="stat-number" id="trackersBlocked">0</span>
-          <span class="stat-label">Trackers Bloqueados</span>
-        </div>
+    <section class="site-card" aria-labelledby="currentSite">
+      <p class="section-label">Sitio actual</p>
+      <h1 id="currentSite">Cargando…</h1>
+      <p id="protectionStatus" class="status" role="status"></p>
+      <div class="site-actions">
+        <button id="sitePause" class="button primary" hidden>Pausar en este sitio</button>
+        <button id="refresh" class="button quiet">Actualizar</button>
       </div>
-      <div class="stat-card cookies">
-        <div class="stat-icon">🍪</div>
-        <div class="stat-info">
-          <span class="stat-number" id="cookiesCount">0</span>
-          <span class="stat-label">Cookies Detectadas</span>
+    </section>
+
+    <div id="siteDetails" hidden>
+      <dl class="metrics" aria-label="Actividad de esta página">
+        <div><dt>Solicitudes bloqueadas</dt><dd id="trackersBlocked">—</dd></div>
+        <div><dt>Rastreadores detectados</dt><dd id="trackersDetected">—</dd></div>
+        <div><dt>Elementos filtrados</dt><dd id="elementsHidden">—</dd></div>
+      </dl>
+
+      <section id="reputation" class="reputation-card" aria-labelledby="riskTitle">
+        <h2 id="riskTitle">Reputación del sitio</h2>
+        <p id="riskStatus" class="status"></p>
+        <ul id="riskIndicators" class="signals"></ul>
+        <div class="ai-actions">
+          <button id="analyze" class="button quiet">Analizar con IA</button>
+          <details id="aiPayload">
+            <summary>Datos enviados</summary>
+            <p class="muted">Tu asistente local envía a Gemini los recuentos de bloqueos, rastreadores y cookies, y las señales de reputación.</p>
+          </details>
         </div>
+        <p id="aiContent" class="ai-result" role="status" hidden></p>
+      </section>
+
+      <div class="tab-list" role="tablist" aria-label="Detalles del sitio">
+        <button id="tabActivity" role="tab" type="button" aria-selected="true" aria-controls="activityPanel">Actividad</button>
+        <button id="tabCookies" role="tab" type="button" aria-selected="false" aria-controls="cookiesPanel" tabindex="-1">Cookies <span id="cookiesCount">—</span></button>
       </div>
+      <section id="activityPanel" role="tabpanel" tabindex="0" aria-labelledby="tabActivity">
+        <p id="trackerEmpty" class="muted">Sin rastreadores detectados.</p>
+        <ul id="trackerList" class="data-list"></ul>
+      </section>
+      <section id="cookiesPanel" role="tabpanel" tabindex="0" aria-labelledby="tabCookies" hidden>
+        <div class="panel-heading">
+          <p class="muted">Cookies de este sitio</p>
+          <button id="clearAllCookies" class="button danger" disabled>Eliminar todas</button>
+        </div>
+        <p id="cookieEmpty" class="muted"></p>
+        <ul id="cookiesList" class="data-list"></ul>
+      </section>
     </div>
-
-    <!-- Privacy Score -->
-    <div class="privacy-score" id="privacyScore" style="display: none;">
-      <div class="score-header">
-        <span class="score-emoji" id="scoreEmoji">🛡️</span>
-        <div class="score-info">
-          <span class="score-label">Score de Privacidad</span>
-          <span class="score-rating" id="scoreRating">Calculando...</span>
-        </div>
+    <p id="notice" class="status notice" role="status"></p>
+  </main>
+  <dialog id="confirmCookies" aria-labelledby="confirmTitle">
+    <form method="dialog">
+      <h2 id="confirmTitle">¿Eliminar todas las cookies?</h2>
+      <p class="muted">Puede que tengas que volver a iniciar sesión en este sitio.</p>
+      <div class="form-actions">
+        <button value="cancel" class="button" autofocus>Cancelar</button>
+        <button value="delete" class="button danger">Eliminar cookies</button>
       </div>
-      <div class="score-bar">
-        <div class="score-fill" id="scoreFill" style="width: 0%"></div>
-      </div>
-      <span class="score-value" id="scoreValue">0</span>
-    </div>
-
-    <!-- AI Analysis Section -->
-    <div class="ai-analysis" id="aiAnalysis" style="display: none;">
-      <div class="ai-header">
-        <span class="ai-icon">🧠</span>
-        <span class="ai-title">Análisis Profundo con IA</span>
-      </div>
-      <div class="ai-content" id="aiContent">
-        <div class="ai-loading">
-          <span class="loading-spinner">✨</span> Analizando privacidad...
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab Navigation -->
-    <nav class="tab-nav">
-      <button class="tab-btn active" data-tab="trackers">
-        <span class="tab-icon">🔍</span>
-        Trackers
-      </button>
-      <button class="tab-btn" data-tab="cookies">
-        <span class="tab-icon">🍪</span>
-        Cookies
-      </button>
-    </nav>
-
-    <!-- Tab Content -->
-    <div class="tab-content">
-      <!-- Trackers Tab -->
-      <div class="tab-panel active" id="trackers-panel">
-        <div class="panel-header">
-          <h3>Trackers en este sitio</h3>
-          <span class="badge" id="trackersBadge">0</span>
-        </div>
-        <div class="tracker-list" id="trackerList">
-          <div class="empty-state">
-            <span class="empty-icon">✨</span>
-            <p>No se detectaron trackers</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cookies Tab -->
-      <div class="tab-panel" id="cookies-panel">
-        <div class="panel-header">
-          <h3>Cookies del sitio</h3>
-          <button class="btn-danger" id="clearAllCookies">
-            <span>🗑️</span> Eliminar Todas
-          </button>
-        </div>
-        <div class="cookies-list" id="cookiesList">
-          <div class="empty-state">
-            <span class="empty-icon">🍪</span>
-            <p>No hay cookies</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="site-info">
-        <span class="site-icon">🌐</span>
-        <span class="site-url" id="currentSite">-</span>
-      </div>
-      <div class="protection-status" id="protectionStatus">
-        <span class="status-dot active"></span>
-        Protección activa
-      </div>
-    </footer>
-    
-    <!-- Developer Signature -->
-    <div class="developer-signature">
-      <span>Desarrollado por</span>
-      <a href="https://frankysolutions.com.br" target="_blank" class="developer-link">
-        Franky Solutions
-      </a>
-    </div>
-  </div>
-
+    </form>
+  </dialog>
   <script type="module" src="popup.js"></script>
 </body>
 </html>

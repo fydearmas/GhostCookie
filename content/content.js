@@ -1,207 +1,248 @@
-/**
- * Ghost Cookie v1.0.0
- * Copyright (c) 2025 Franky Solutions
- * Developed by: Franky Solutions
- * Build: mj9e32q8
- * Watermark: GC-mj9e32q8
- * 
- * This code is protected by copyright.
- * Unauthorized use is prohibited.
- */
-
-// Ghost Cookie - Content Script
-// Injected into web pages for inline tracker detection
-
-(function () {
+(() => {
   "use strict";
 
-  const INLINE_PATTERNS = [
-    { pattern: /gtag\s*\(/gi, name: "Google Analytics", category: "Analytics" },
-    {
-      pattern: /ga\s*\(\s*['"]create/gi,
-      name: "Google Analytics (Legacy)",
-      category: "Analytics",
-    },
-    { pattern: /fbq\s*\(/gi, name: "Facebook Pixel", category: "Social Media" },
-    { pattern: /_hj\(/gi, name: "Hotjar", category: "Analytics" },
-    { pattern: /mixpanel\.track/gi, name: "Mixpanel", category: "Analytics" },
-    {
-      pattern: /amplitude\.getInstance/gi,
-      name: "Amplitude",
-      category: "Analytics",
-    },
-    { pattern: /heap\.track/gi, name: "Heap Analytics", category: "Analytics" },
-    { pattern: /analytics\.track/gi, name: "Segment", category: "Analytics" },
-    { pattern: /intercomSettings/gi, name: "Intercom", category: "Marketing" },
-    {
-      pattern: /clarity\s*\(/gi,
-      name: "Microsoft Clarity",
-      category: "Analytics",
-    },
-    { pattern: /twq\s*\(/gi, name: "Twitter Pixel", category: "Social Media" },
-    {
-      pattern: /lintrk\s*\(/gi,
-      name: "LinkedIn Insight",
-      category: "Social Media",
-    },
-    { pattern: /_hsq\.push/gi, name: "HubSpot", category: "Marketing" },
+  const SCRIPT_TYPES = /^(?:(?:text|application)\/(?:javascript|ecmascript)|module)?$/i;
+  const INLINE_SIGNATURES = [
+    [/\bgtag\s*\(/i, "Google Analytics", "Analytics"],
+    [/\bga\s*\(\s*["']create/i, "Google Analytics", "Analytics"],
+    [/\bfbq\s*\(/i, "Facebook Pixel", "Social Media"],
+    [/\b_hj\s*\(/i, "Hotjar", "Analytics"],
+    [/\bmixpanel\.track\s*\(/i, "Mixpanel", "Analytics"],
+    [/\bamplitude\.getInstance\s*\(/i, "Amplitude", "Analytics"],
+    [/\bheap\.track\s*\(/i, "Heap Analytics", "Analytics"],
+    [/\banalytics\.track\s*\(/i, "Segment", "Analytics"],
+    [/\bintercomSettings\b/i, "Intercom", "Marketing"],
+    [/\bclarity\s*\(/i, "Microsoft Clarity", "Analytics"],
+    [/\btwq\s*\(/i, "Twitter Pixel", "Social Media"],
+    [/\blintrk\s*\(/i, "LinkedIn Insight", "Social Media"],
+    [/\b_hsq\.push\s*\(/i, "HubSpot", "Marketing"],
   ];
+  const NETWORK_SIGNATURES = new Map([
+    ["google-analytics.com", ["Google Analytics", "Analytics"]],
+    ["googletagmanager.com", ["Google Tag Manager", "Analytics"]],
+    ["connect.facebook.net", ["Facebook Pixel", "Social Media"]],
+    ["pixel.facebook.com", ["Facebook Pixel", "Social Media"]],
+    ["hotjar.com", ["Hotjar", "Analytics"]],
+    ["mixpanel.com", ["Mixpanel", "Analytics"]],
+    ["amplitude.com", ["Amplitude", "Analytics"]],
+    ["heapanalytics.com", ["Heap Analytics", "Analytics"]],
+    ["segment.com", ["Segment", "Analytics"]],
+    ["segment.io", ["Segment", "Analytics"]],
+    ["clarity.ms", ["Microsoft Clarity", "Analytics"]],
+    ["fullstory.com", ["FullStory", "Analytics"]],
+    ["intercom.io", ["Intercom", "Marketing"]],
+    ["hs-analytics.net", ["HubSpot", "Marketing"]],
+    ["hs-scripts.com", ["HubSpot", "Marketing"]],
+    ["doubleclick.net", ["DoubleClick", "Advertising"]],
+    ["googlesyndication.com", ["Google Ads", "Advertising"]],
+    ["criteo.com", ["Criteo", "Advertising"]],
+    ["taboola.com", ["Taboola", "Advertising"]],
+    ["outbrain.com", ["Outbrain", "Advertising"]],
+  ]);
+  const SOURCE_ELEMENTS = "script,img[src],iframe[src]";
+  const MAX_PENDING_ROOTS = 50;
+  const MAX_FILTERED_ELEMENTS = 5000;
+  const SCAN_DELAY_MS = 120;
 
-  const domain = window.location.hostname;
-  const detectedTrackers = new Set();
+  const youtube = globalThis.ghostCookieYouTube;
+  const pendingRoots = new Set();
+  const filteredElements = new Set();
+  const detections = new Map();
+  const observer = new MutationObserver(queueMutations);
+  let enabled = false;
+  let cosmeticSheet;
+  let cosmeticSelector = "";
+  let scanTimer;
+  let policyRevision = 0;
+  let lastReport;
 
-  function scanInlineScripts() {
-    const scripts = document.querySelectorAll("script:not([src])");
-    scripts.forEach((script) => {
-      const content = script.textContent;
-      if (!content) return;
-      INLINE_PATTERNS.forEach(({ pattern, name, category }) => {
-        if (pattern.test(content) && !detectedTrackers.has(name)) {
-          detectedTrackers.add(name);
-          reportTracker(name, category, "Inline script: " + name);
-        }
-      });
-    });
-  }
-
-  function scanExternalScripts() {
-    const scripts = document.querySelectorAll("script[src]");
-    scripts.forEach((script) => {
-      const src = script.src.toLowerCase();
-      const trackerMappings = [
-        {
-          pattern: "google-analytics.com",
-          name: "Google Analytics",
-          category: "Analytics",
-        },
-        {
-          pattern: "googletagmanager.com",
-          name: "Google Tag Manager",
-          category: "Analytics",
-        },
-        {
-          pattern: "facebook.net",
-          name: "Facebook Pixel",
-          category: "Social Media",
-        },
-        { pattern: "hotjar.com", name: "Hotjar", category: "Analytics" },
-        { pattern: "mixpanel.com", name: "Mixpanel", category: "Analytics" },
-        { pattern: "segment.com", name: "Segment", category: "Analytics" },
-        { pattern: "amplitude.com", name: "Amplitude", category: "Analytics" },
-        {
-          pattern: "clarity.ms",
-          name: "Microsoft Clarity",
-          category: "Analytics",
-        },
-        { pattern: "fullstory.com", name: "FullStory", category: "Analytics" },
-        { pattern: "intercom.io", name: "Intercom", category: "Marketing" },
-        { pattern: "hubspot.com", name: "HubSpot", category: "Marketing" },
-        { pattern: "hs-scripts.com", name: "HubSpot", category: "Marketing" },
-        {
-          pattern: "doubleclick.net",
-          name: "DoubleClick",
-          category: "Advertising",
-        },
-        { pattern: "criteo.com", name: "Criteo", category: "Advertising" },
-        { pattern: "taboola.com", name: "Taboola", category: "Advertising" },
-        { pattern: "outbrain.com", name: "Outbrain", category: "Advertising" },
-      ];
-      trackerMappings.forEach(({ pattern, name, category }) => {
-        if (src.includes(pattern) && !detectedTrackers.has(name)) {
-          detectedTrackers.add(name);
-          reportTracker(name, category, src);
-        }
-      });
-    });
-  }
-
-  function scanTrackingPixels() {
-    const images = document.querySelectorAll(
-      'img[width="1"], img[height="1"], img[style*="display:none"], img[style*="display: none"]'
+  function domainsFor(hostname) {
+    const labels = hostname.toLowerCase().replace(/\.$/, "").split(".");
+    return labels.slice(0, Math.max(1, labels.length - 1)).map(
+      (_, index) => labels.slice(index).join(".")
     );
-    images.forEach((img) => {
-      const src = img.src ? img.src.toLowerCase() : "";
-      if (src.includes("facebook.com") || src.includes("pixel")) {
-        if (!detectedTrackers.has("Facebook Pixel (Image)")) {
-          detectedTrackers.add("Facebook Pixel (Image)");
-          reportTracker("Facebook Pixel", "Social Media", src);
-        }
-      }
-      if (src.includes("google-analytics.com") || src.includes("collect?")) {
-        if (!detectedTrackers.has("Google Analytics (Image)")) {
-          detectedTrackers.add("Google Analytics (Image)");
-          reportTracker("Google Analytics", "Analytics", src);
-        }
-      }
-    });
   }
 
-  function reportTracker(name, category, url) {
-    try {
-      chrome.runtime.sendMessage({
-        action: "trackerDetected",
-        domain: domain,
-        tracker: { name: name, category: category, url: url },
-      });
-    } catch (error) {
-      console.debug("Ghost Cookie: Could not report tracker", error);
+  function createCosmeticSheet() {
+    const {
+      generic = [], domains = {}, exceptions = {}, skipGeneric = [], skipAll = [],
+    } = globalThis.ghostCookieCosmeticRules ?? {};
+    const hosts = domainsFor(location.hostname);
+    const excluded = new Set(
+      ["*", ...hosts].flatMap((host) => Object.hasOwn(exceptions, host) ? exceptions[host] : [])
+    );
+    const skipAllCosmetics = skipAll.includes("*") || hosts.some((host) => skipAll.includes(host));
+    const skipGenericCosmetics = skipGeneric.includes("*") ||
+      hosts.some((host) => skipGeneric.includes(host));
+    const selectors = skipAllCosmetics ? [] : [
+      ...(skipGenericCosmetics ? [] : generic),
+      ...hosts.flatMap((host) => Object.hasOwn(domains, host) ? domains[host] : []),
+      ...(youtube?.selectors ?? []),
+    ];
+    const usableSelectors = [...new Set(selectors)].filter(
+      (selector) => !excluded.has(selector) && CSS.supports(`selector(${selector})`)
+    );
+    cosmeticSelector = usableSelectors.join(",");
+    cosmeticSheet = new CSSStyleSheet();
+    cosmeticSheet.replaceSync(
+      usableSelectors.map((selector) => `${selector} { display: none !important; }`).join("\n")
+    );
+  }
+
+  function start() {
+    if (!cosmeticSheet) createCosmeticSheet();
+    if (cosmeticSelector) {
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, cosmeticSheet];
     }
-  }
-
-  function observeDynamicContent() {
-    const observer = new MutationObserver((mutations) => {
-      let shouldScan = false;
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.tagName === "SCRIPT" || node.tagName === "IMG") {
-            shouldScan = true;
-          }
-        });
-      });
-      if (shouldScan) {
-        scanExternalScripts();
-        scanTrackingPixels();
-      }
-    });
-    observer.observe(document.documentElement, {
+    observer.observe(document, {
+      attributes: true,
+      attributeFilter: ["aria-disabled", "class", "disabled", "hidden", "href", "id", "src", "style"],
       childList: true,
       subtree: true,
     });
+    queueRoot(document);
+    scheduleScan();
   }
 
-  function init() {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => {
-        scanInlineScripts();
-        scanExternalScripts();
-        scanTrackingPixels();
-      });
-    } else {
-      scanInlineScripts();
-      scanExternalScripts();
-      scanTrackingPixels();
+  function stop() {
+    observer.disconnect();
+    clearTimeout(scanTimer);
+    scanTimer = undefined;
+    pendingRoots.clear();
+    filteredElements.clear();
+    lastReport = undefined;
+    if (cosmeticSheet) {
+      document.adoptedStyleSheets = document.adoptedStyleSheets.filter(
+        (sheet) => sheet !== cosmeticSheet
+      );
     }
-    observeDynamicContent();
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        scanInlineScripts();
-        scanExternalScripts();
-        scanTrackingPixels();
-      }, 2000);
-    });
   }
 
-  init();
+  function setPolicy(nextEnabled) {
+    if (enabled === nextEnabled) return;
+    enabled = nextEnabled;
+    if (enabled) start();
+    else stop();
+  }
+
+  function queueRoot(root) {
+    if (pendingRoots.has(document)) return;
+    if (root === document || pendingRoots.size >= MAX_PENDING_ROOTS) {
+      pendingRoots.clear();
+      pendingRoots.add(document);
+    } else if (root instanceof Element) {
+      pendingRoots.add(root);
+    }
+  }
+
+  function queueMutations(mutations) {
+    for (const mutation of mutations) {
+      if (mutation.type === "attributes" || mutation.target instanceof HTMLScriptElement) {
+        queueRoot(mutation.target);
+      }
+      for (const node of mutation.addedNodes) queueRoot(node);
+    }
+    scheduleScan();
+  }
+
+  function scheduleScan() {
+    if (scanTimer === undefined) scanTimer = setTimeout(scan, SCAN_DELAY_MS);
+  }
+
+  function eachMatch(root, selector, inspect) {
+    if (root instanceof Element && root.matches(selector)) inspect(root);
+    for (const match of root.querySelectorAll(selector)) inspect(match);
+  }
+
+  function recordDetection(name, category) {
+    if (!detections.has(name)) detections.set(name, { name, category });
+  }
+
+  function inspectSource(element) {
+    const src = element.getAttribute("src");
+    if (src !== null) {
+      try {
+        const url = new URL(src, document.baseURI);
+        if (url.protocol !== "https:" && url.protocol !== "http:") return;
+        for (const domain of domainsFor(url.hostname)) {
+          const signature = NETWORK_SIGNATURES.get(domain);
+          if (signature) {
+            recordDetection(...signature);
+            return;
+          }
+        }
+        if (
+          (url.hostname === "facebook.com" || url.hostname.endsWith(".facebook.com")) &&
+          (url.pathname === "/tr" || url.pathname === "/tr/")
+        ) {
+          recordDetection("Facebook Pixel", "Social Media");
+        }
+      } catch {
+        // Ignore malformed attributes.
+      }
+    } else if (element instanceof HTMLScriptElement && SCRIPT_TYPES.test(element.type.trim())) {
+      const script = element.textContent.slice(0, 32_768);
+      for (const [pattern, name, category] of INLINE_SIGNATURES) {
+        if (!detections.has(name) && pattern.test(script)) recordDetection(name, category);
+      }
+    }
+  }
+
+  function inspectCosmetic(element) {
+    if (filteredElements.size >= MAX_FILTERED_ELEMENTS || filteredElements.has(element)) return;
+    if (getComputedStyle(element).display === "none") filteredElements.add(element);
+  }
+
+  function scan() {
+    scanTimer = undefined;
+    if (!enabled) return;
+    const roots = [...pendingRoots].filter((root) => root.isConnected);
+    pendingRoots.clear();
+    const scanRoots = roots.filter(
+      (root) => !roots.some((other) => other !== root && other.contains(root))
+    );
+    for (const element of filteredElements) {
+      if (!element.isConnected || scanRoots.some((root) => root.contains(element))) {
+        filteredElements.delete(element);
+      }
+    }
+    for (const root of scanRoots) {
+      eachMatch(root, SOURCE_ELEMENTS, inspectSource);
+      if (cosmeticSelector) eachMatch(root, cosmeticSelector, inspectCosmetic);
+    }
+    youtube?.skipAdIfAvailable();
+    const hidden = filteredElements.size;
+    if (lastReport?.hidden === hidden && lastReport.detected === detections.size) return;
+    const report = {
+      action: "content:report",
+      detections: [...detections.values()],
+      hidden,
+    };
+    lastReport = { hidden, detected: detections.size };
+    chrome.runtime.sendMessage(report).catch(() => {});
+  }
+
+  function refreshPolicy() {
+    const revision = policyRevision;
+    chrome.runtime.sendMessage({ action: "content:getPolicy" }).then((policy) => {
+      if (revision !== policyRevision || !policy?.ok || typeof policy.enabled !== "boolean") return;
+      setPolicy(policy.enabled);
+      if (enabled) {
+        lastReport = undefined;
+        queueRoot(document);
+        scheduleScan();
+      }
+    }).catch(() => {});
+  }
+
+  chrome.runtime.onMessage.addListener((message, sender) => {
+    if (sender.id !== chrome.runtime.id || message?.action !== "content:policy" ||
+        typeof message.enabled !== "boolean") return;
+    policyRevision += 1;
+    setPolicy(message.enabled);
+  });
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) refreshPolicy();
+  });
+  refreshPolicy();
 })();
-
-// Watermark: GC-mizcrpng
-// Build: mizcrpng
-
-// Watermark: GC-mizdukir
-// Build: mizdukir
-
-// Watermark: GC-mj9cmgyy
-// Build: mj9cmgyy
-
-// Watermark: GC-mj9e32q8
-// Build: mj9e32q8

@@ -1,398 +1,295 @@
-/**
- * Ghost Cookie v1.0.0
- * Copyright (c) 2025 Franky Solutions
- * Developed by: Franky Solutions
- * Build: mj9e32q8
- * Watermark: GC-mj9e32q8
- * 
- * This code is protected by copyright.
- * Unauthorized use is prohibited.
- */
+import {
+  changeSitePause, clearSitePauses, pagePolicy, protectionReady, readProtection, setGlobalProtection
+} from "./protection.js";
+import { getReputation } from "./reputation.js";
+import { expireCookies, getSiteCookies, summarizeCookies } from "./site-cookies.js";
 
-/**
- * Ghost Cookie v1.0.0
- * Copyright (c) 2025 Franky Solutions
- * Developed by: Franky Solutions
- * Build: mizdukir
- * Watermark: GC-mizdukir
- *
- * This code is protected by copyright.
- * Unauthorized use is prohibited.
- */
+const POPUP = chrome.runtime.getURL("popup/popup.html");
+const OPTIONS = chrome.runtime.getURL("options/options.html");
+const NATIVE_HOST = "com.ghostcookie.assistant";
+const NETWORK_FILTERS = new Set(["tracker_rules", "easylist", "easyprivacy"]);
+const documentWrites = new Map();
+let analysisPending = false;
+let policyChange = Promise.resolve();
 
-// Ghost Cookie - Service Worker
-// Background script for tracker detection and blocking
-
-import { TRACKER_LIST, getTrackerInfo } from "./tracker-list.js";
-
-// ===== Tracker Patterns for Network Detection =====
-const TRACKER_PATTERNS = [
-  {
-    pattern: "google-analytics.com",
-    name: "Google Analytics",
-    category: "Analytics",
-  },
-  {
-    pattern: "googletagmanager.com",
-    name: "Google Tag Manager",
-    category: "Analytics",
-  },
-  { pattern: "doubleclick.net", name: "DoubleClick", category: "Advertising" },
-  {
-    pattern: "googlesyndication.com",
-    name: "Google Ads",
-    category: "Advertising",
-  },
-  {
-    pattern: "googleadservices.com",
-    name: "Google Ads",
-    category: "Advertising",
-  },
-  { pattern: "facebook.net", name: "Facebook Pixel", category: "Social Media" },
-  {
-    pattern: "facebook.com/tr",
-    name: "Facebook Pixel",
-    category: "Social Media",
-  },
-  {
-    pattern: "connect.facebook",
-    name: "Facebook Pixel",
-    category: "Social Media",
-  },
-  { pattern: "hotjar.com", name: "Hotjar", category: "Analytics" },
-  { pattern: "mixpanel.com", name: "Mixpanel", category: "Analytics" },
-  { pattern: "amplitude.com", name: "Amplitude", category: "Analytics" },
-  { pattern: "segment.com", name: "Segment", category: "Analytics" },
-  { pattern: "segment.io", name: "Segment", category: "Analytics" },
-  { pattern: "clarity.ms", name: "Microsoft Clarity", category: "Analytics" },
-  { pattern: "fullstory.com", name: "FullStory", category: "Analytics" },
-  {
-    pattern: "heapanalytics.com",
-    name: "Heap Analytics",
-    category: "Analytics",
-  },
-  { pattern: "hubspot.com", name: "HubSpot", category: "Marketing" },
-  { pattern: "hs-scripts.com", name: "HubSpot", category: "Marketing" },
-  { pattern: "hs-analytics.net", name: "HubSpot", category: "Marketing" },
-  { pattern: "intercom.io", name: "Intercom", category: "Marketing" },
-  { pattern: "crisp.chat", name: "Crisp", category: "Marketing" },
-  { pattern: "drift.com", name: "Drift", category: "Marketing" },
-  { pattern: "optimizely.com", name: "Optimizely", category: "A/B Testing" },
-  { pattern: "crazyegg.com", name: "Crazy Egg", category: "Heatmaps" },
-  { pattern: "luckyorange.com", name: "Lucky Orange", category: "Heatmaps" },
-  { pattern: "newrelic.com", name: "New Relic", category: "Analytics" },
-  { pattern: "nr-data.net", name: "New Relic", category: "Analytics" },
-  { pattern: "ads.twitter.com", name: "Twitter Ads", category: "Social Media" },
-  {
-    pattern: "analytics.twitter.com",
-    name: "Twitter Analytics",
-    category: "Social Media",
-  },
-  {
-    pattern: "linkedin.com/px",
-    name: "LinkedIn Insight",
-    category: "Social Media",
-  },
-  {
-    pattern: "snap.licdn.com",
-    name: "LinkedIn Insight",
-    category: "Social Media",
-  },
-  { pattern: "tiktok.com", name: "TikTok Pixel", category: "Social Media" },
-  { pattern: "pinterest.com", name: "Pinterest", category: "Social Media" },
-  { pattern: "criteo.com", name: "Criteo", category: "Advertising" },
-  { pattern: "criteo.net", name: "Criteo", category: "Advertising" },
-  { pattern: "taboola.com", name: "Taboola", category: "Advertising" },
-  { pattern: "outbrain.com", name: "Outbrain", category: "Advertising" },
-  { pattern: "adroll.com", name: "AdRoll", category: "Advertising" },
-  { pattern: "pubmatic.com", name: "PubMatic", category: "Advertising" },
-  { pattern: "rubiconproject.com", name: "Rubicon", category: "Advertising" },
-  { pattern: "adsrvr.org", name: "The Trade Desk", category: "Advertising" },
-  { pattern: "adnxs.com", name: "AppNexus", category: "Advertising" },
-  {
-    pattern: "amazon-adsystem.com",
-    name: "Amazon Ads",
-    category: "Advertising",
-  },
-  { pattern: "quantserve.com", name: "Quantcast", category: "Analytics" },
-  { pattern: "scorecardresearch.com", name: "Comscore", category: "Analytics" },
-  { pattern: "krxd.net", name: "Krux/Salesforce DMP", category: "Analytics" },
-  { pattern: "bluekai.com", name: "BlueKai/Oracle", category: "Analytics" },
-  {
-    pattern: "demdex.net",
-    name: "Adobe Audience Manager",
-    category: "Analytics",
-  },
-  { pattern: "omtrdc.net", name: "Adobe Analytics", category: "Analytics" },
-  { pattern: "chartbeat.com", name: "Chartbeat", category: "Analytics" },
-  { pattern: "parsely.com", name: "Parse.ly", category: "Analytics" },
-  // YouTube Ads
-  {
-    pattern: "youtube.com/api/stats/ads",
-    name: "YouTube Ads",
-    category: "Advertising",
-  },
-  {
-    pattern: "youtube.com/pagead/",
-    name: "YouTube Ads",
-    category: "Advertising",
-  },
-  {
-    pattern: "youtube.com/ptracking",
-    name: "YouTube Tracking",
-    category: "Advertising",
-  },
-  {
-    pattern: "youtube.com/get_midroll_info",
-    name: "YouTube Video Ads",
-    category: "Advertising",
-  },
-  {
-    pattern: "s.ytimg.com/yts/jsbin/www-pagead",
-    name: "YouTube Ads Script",
-    category: "Advertising",
-  },
-];
-
-// ===== State Management =====
-const state = {
-  protectionEnabled: true,
-  blockedTrackers: {}, // { domain: count }
-  detectedTrackers: {}, // { domain: [{ name, category, url, blockedAt }] }
-  networkBlocks: {}, // { domain: count } - real network blocks
-};
-
-// Initialize state from storage
-chrome.storage.local.get(
-  ["protectionEnabled", "blockedTrackers", "detectedTrackers", "networkBlocks"],
-  (result) => {
-    state.protectionEnabled = result.protectionEnabled !== false;
-    state.blockedTrackers = result.blockedTrackers || {};
-    state.detectedTrackers = result.detectedTrackers || {};
-    state.networkBlocks = result.networkBlocks || {};
-  }
-);
-
-// ===== Detect Tracker from URL =====
-function detectTrackerFromUrl(url) {
-  const urlLower = url.toLowerCase();
-  for (const tracker of TRACKER_PATTERNS) {
-    if (urlLower.includes(tracker.pattern)) {
-      return { name: tracker.name, category: tracker.category, url: url };
-    }
-  }
-  // Also check the imported tracker list
-  return getTrackerInfo(url);
+function reconcileOnStart() {
+  void protectionReady.catch(() => {});
 }
 
-// ===== Monitor Network Requests =====
-chrome.webRequest.onBeforeRequest.addListener(
-  (details) => {
-    if (!state.protectionEnabled) return;
-    if (details.tabId < 0) return; // Ignore non-tab requests
+chrome.runtime.onInstalled.addListener(reconcileOnStart);
+chrome.runtime.onStartup.addListener(reconcileOnStart);
 
-    const trackerInfo = detectTrackerFromUrl(details.url);
-    if (trackerInfo) {
-      // Get the tab's domain
-      chrome.tabs.get(details.tabId, (tab) => {
-        if (chrome.runtime.lastError || !tab?.url) return;
-
-        const domain = getDomainFromUrl(tab.url);
-        if (!domain) return;
-
-        // Add to detected trackers
-        if (!state.detectedTrackers[domain]) {
-          state.detectedTrackers[domain] = [];
-        }
-
-        // Check if already detected
-        const exists = state.detectedTrackers[domain].some(
-          (t) => t.name === trackerInfo.name
-        );
-        if (!exists) {
-          state.detectedTrackers[domain].push({
-            name: trackerInfo.name,
-            category: trackerInfo.category,
-            url: details.url,
-            blockedAt: Date.now(),
-          });
-        }
-
-        // Increment block count
-        state.blockedTrackers[domain] =
-          (state.blockedTrackers[domain] || 0) + 1;
-        state.networkBlocks[domain] = (state.networkBlocks[domain] || 0) + 1;
-
-        // Save to storage
-        chrome.storage.local.set({
-          blockedTrackers: state.blockedTrackers,
-          detectedTrackers: state.detectedTrackers,
-          networkBlocks: state.networkBlocks,
-        });
-
-        // Update badge
-        updateBadge(domain);
-      });
-    }
-  },
-  { urls: ["<all_urls>"] },
-  []
-);
-
-// ===== Message Handlers =====
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  switch (message.action) {
-    case "toggleProtection":
-      handleToggleProtection(message.enabled);
-      sendResponse({ success: true });
-      break;
-    case "getTrackers":
-      const trackers = state.detectedTrackers[message.domain] || [];
-      const blockCount = state.blockedTrackers[message.domain] || 0;
-      sendResponse({ trackers, blockCount });
-      break;
-    case "getStats":
-      sendResponse({
-        blockedCount: state.blockedTrackers[message.domain] || 0,
-        trackers: state.detectedTrackers[message.domain] || [],
-        networkBlocks: state.networkBlocks[message.domain] || 0,
-      });
-      break;
-    case "trackerDetected":
-      handleTrackerDetected(message.domain, message.tracker);
-      sendResponse({ success: true });
-      break;
-    case "clearStats":
-      if (message.domain) {
-        delete state.blockedTrackers[message.domain];
-        delete state.detectedTrackers[message.domain];
-        delete state.networkBlocks[message.domain];
-        chrome.storage.local.set({
-          blockedTrackers: state.blockedTrackers,
-          detectedTrackers: state.detectedTrackers,
-          networkBlocks: state.networkBlocks,
-        });
-      }
-      sendResponse({ success: true });
-      break;
-    default:
-      sendResponse({ error: "Unknown action" });
+function webUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["https:", "http:"].includes(url.protocol) ? url : null;
+  } catch {
+    return null;
   }
+}
+
+const recordKey = (tabId) => "document:" + tabId;
+
+function writeDocument(tabId, update) {
+  const work = (documentWrites.get(tabId) ?? Promise.resolve()).catch(() => {}).then(update);
+  documentWrites.set(tabId, work);
+  const cleanup = () => {
+    if (documentWrites.get(tabId) === work) documentWrites.delete(tabId);
+  };
+  work.then(cleanup, cleanup);
+  return work;
+}
+
+chrome.webNavigation.onCommitted.addListener(({ tabId, frameId, documentId, timeStamp, url }) => {
+  if (frameId !== 0) return;
+  const key = recordKey(tabId);
+  void writeDocument(tabId, () => webUrl(url)
+    ? chrome.storage.session.set({ [key]: { documentId, since: timeStamp, detections: [], hidden: 0 } })
+    : chrome.storage.session.remove(key)).catch(() => {});
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  void writeDocument(tabId, () => chrome.storage.session.remove(recordKey(tabId))).catch(() => {});
+});
+
+async function getDocument(tabId) {
+  const frame = await chrome.webNavigation.getFrame({ tabId, frameId: 0 }).catch(() => null);
+  const url = webUrl(frame?.url);
+  return url && frame.documentId ? { tabId, documentId: frame.documentId, url } : null;
+}
+
+async function currentSite(expected) {
+  let tab;
+  if (expected) {
+    tab = await chrome.tabs.get(expected.tabId).catch(() => null);
+  } else {
+    const window = await chrome.windows.getLastFocused({ windowTypes: ["normal"] }).catch(() => null);
+    if (Number.isInteger(window?.id)) {
+      [tab] = await chrome.tabs.query({ active: true, windowId: window.id });
+    }
+  }
+  const site = tab?.active ? await getDocument(tab.id) : null;
+  if (expected && (site?.tabId !== expected.tabId || site?.documentId !== expected.documentId)) {
+    throw new Error("La página cambió. Actualiza el panel e inténtalo de nuevo.");
+  }
+  return site;
+}
+
+async function readDocument(site) {
+  const key = recordKey(site.tabId);
+  await documentWrites.get(site.tabId)?.catch(() => {});
+  const record = (await chrome.storage.session.get(key))[key];
+  return record?.documentId === site.documentId ? record : null;
+}
+
+async function reportContent(sender, message) {
+  const tabId = sender.tab.id;
+  const site = await getDocument(tabId);
+  if (!site || site.documentId !== sender.documentId) return { ok: false };
+  if (!pagePolicy(await readProtection(), site.url.hostname).enabled) return { ok: true };
+
+  return writeDocument(tabId, async () => {
+    const key = recordKey(tabId);
+    const record = (await chrome.storage.session.get(key))[key];
+    if (record && record.documentId !== site.documentId) return { ok: false };
+    const current = record ?? { documentId: site.documentId, since: Date.now(), detections: [], hidden: 0 };
+    const unique = new Map(current.detections.map((item) => [item.name, item]));
+    const supplied = Array.isArray(message.detections) ? message.detections.slice(0, 100) : [];
+    for (const item of supplied) {
+      if (typeof item?.name !== "string" || typeof item?.category !== "string") continue;
+      const name = item.name.trim().slice(0, 80);
+      const category = item.category.trim().slice(0, 50);
+      if (name && category && unique.size < 100) unique.set(name, { name, category });
+    }
+    const hidden = Number.isSafeInteger(message.hidden) ? Math.max(0, Math.min(message.hidden, 10000)) : current.hidden;
+    await chrome.storage.session.set({ [key]: { ...current, detections: [...unique.values()], hidden } });
+    return { ok: true };
+  });
+}
+
+async function countBlocks(site, since) {
+  if (typeof since !== "number") return null;
+  try {
+    const { rulesMatchedInfo } = await chrome.declarativeNetRequest.getMatchedRules({
+      tabId: site.tabId, minTimeStamp: since
+    });
+    return rulesMatchedInfo.filter(({ rule }) => NETWORK_FILTERS.has(rule.rulesetId) && rule.ruleId < 1000000).length;
+  } catch {
+    return null;
+  }
+}
+
+async function siteSummary(site, protection) {
+  const record = await readDocument(site);
+  const policy = pagePolicy(protection, site.url.hostname);
+  const [blocked, reputation, cookies] = await Promise.all([
+    countBlocks(site, record?.since),
+    getReputation(site.url),
+    getSiteCookies(site.tabId, site.url).catch(() => null)
+  ]);
+  const current = await getDocument(site.tabId);
+  if (current?.documentId !== site.documentId) throw new Error("La página cambió. Actualiza el panel.");
+  return {
+    tabId: site.tabId, documentId: site.documentId, host: site.url.hostname,
+    pause: policy.pause, filtering: policy.enabled, blocked,
+    detections: record?.detections ?? [],
+    hidden: policy.enabled ? (record?.hidden ?? 0) : 0,
+    reputation,
+    cookies: cookies ? summarizeCookies(cookies, protection.classifyCookies) : null
+  };
+}
+
+async function updateContentPolicy() {
+  const protection = await readProtection();
+  const tabs = await chrome.tabs.query({ url: ["https://*/*", "http://*/*"] });
+  await Promise.allSettled(tabs.map(async (tab) => {
+    const site = await getDocument(tab.id);
+    if (!site) return;
+    const { enabled } = pagePolicy(protection, site.url.hostname);
+    await chrome.tabs.sendMessage(tab.id, { action: "content:policy", enabled }, { documentId: site.documentId });
+  }));
+}
+
+function changePolicy(apply) {
+  policyChange = policyChange.catch(() => {}).then(async () => {
+    await apply();
+    await updateContentPolicy();
+  });
+  return policyChange;
+}
+
+async function clearCookies(message) {
+  const site = await currentSite(message.expected);
+  const before = await getSiteCookies(site.tabId, site.url);
+  if (message.id != null && !before.has(message.id)) {
+    throw new Error("La cookie ya no está disponible. Actualiza el panel.");
+  }
+  const selected = message.id == null ? before : new Map([[message.id, before.get(message.id)]]);
+  await currentSite(message.expected);
+  await expireCookies([...selected.values()]);
+  const after = await getSiteCookies(site.tabId, site.url);
+  const remaining = [...selected.keys()].filter((id) => after.has(id)).length;
+  return { ok: true, removed: selected.size - remaining, remaining };
+}
+
+async function nativeRequest(request) {
+  if (!await chrome.permissions.contains({ permissions: ["nativeMessaging"] })) {
+    return { ok: false, error: "Autoriza el acceso al asistente local desde Ajustes.", code: "permission" };
+  }
+  try {
+    const reply = await chrome.runtime.sendNativeMessage(NATIVE_HOST, request);
+    if (reply?.ok === true) {
+      if (request.action === "status") return { ok: true, configured: reply.configured === true };
+      if (typeof reply.text === "string" && reply.text.trim()) return { ok: true, text: reply.text.slice(0, 4000) };
+    }
+    return {
+      ok: false,
+      code: typeof reply?.code === "string" ? reply.code.slice(0, 60) : "native-response",
+      error: typeof reply?.error === "string" ? reply.error.slice(0, 300) : "El asistente devolvió una respuesta inválida."
+    };
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "";
+    if (/forbidden|not allowed/i.test(detail)) {
+      return { ok: false, code: "native-origin", error: "Este navegador no tiene acceso al asistente. Abre Ghost Cookie Assistant y registra la conexión." };
+    }
+    if (/not found|not registered/i.test(detail)) {
+      return { ok: false, code: "native-missing", error: "El navegador no encontró el asistente. Instálalo y vuelve a comprobar la conexión." };
+    }
+    return { ok: false, code: "native-unavailable", error: "El navegador no pudo iniciar el asistente local. Comprueba su instalación." };
+  }
+}
+
+async function analyzeSite(expected) {
+  if (analysisPending) return { ok: false, error: "Ya hay un análisis en curso." };
+  analysisPending = true;
+  try {
+    const site = await currentSite(expected);
+    const result = await siteSummary(site, await readProtection());
+    if (!result.cookies) return { ok: false, error: "No se pudieron leer las señales de cookies. Actualiza el panel." };
+    await currentSite(expected);
+    return await nativeRequest({ action: "analyze", signals: {
+      blocked: result.blocked === null ? null : Math.min(result.blocked, 1000000),
+      detected: result.detections.length,
+      cookies: Math.min(result.cookies.length, 1000000),
+      threat: result.reputation.threat,
+      indicators: result.reputation.indicators
+    } });
+  } finally {
+    analysisPending = false;
+  }
+}
+
+function assertDocument(expected) {
+  if (!Number.isInteger(expected?.tabId) || typeof expected?.documentId !== "string") {
+    throw new Error("Abre una página web para usar esta acción.");
+  }
+  return expected;
+}
+
+async function handle(message, sender) {
+  if (sender.id !== chrome.runtime.id || typeof message?.action !== "string") return { ok: false };
+
+  if (message.action.startsWith("content:")) {
+    const url = webUrl(sender.url);
+    if (!url || !sender.tab || sender.frameId !== 0 || !sender.documentId) return { ok: false };
+    if (message.action === "content:getPolicy") {
+      return { ok: true, enabled: pagePolicy(await readProtection(), url.hostname).enabled };
+    }
+    if (message.action === "content:report") return reportContent(sender, message);
+    return { ok: false };
+  }
+
+  if (sender.url !== POPUP && sender.url !== OPTIONS) return { ok: false };
+  switch (message.action) {
+    case "settings:get":
+      return { ok: true, protection: await readProtection() };
+    case "settings:global":
+      if (typeof message.enabled !== "boolean") return { ok: false };
+      await changePolicy(() => setGlobalProtection(message.enabled));
+      return { ok: true, protection: await readProtection() };
+    case "settings:classification":
+      if (sender.url !== OPTIONS || typeof message.enabled !== "boolean") return { ok: false };
+      await chrome.storage.local.set({ classifyCookies: message.enabled });
+      return { ok: true };
+    case "settings:resetPauses":
+      if (sender.url !== OPTIONS) return { ok: false };
+      await changePolicy(clearSitePauses);
+      return { ok: true, protection: await readProtection() };
+    case "ai:status":
+      return nativeRequest({ action: "status" });
+  }
+
+  if (sender.url !== POPUP) return { ok: false };
+  switch (message.action) {
+    case "popup:get": {
+      const [site, protection] = await Promise.all([currentSite(), readProtection()]);
+      return { ok: true, protection, site: site ? await siteSummary(site, protection) : null };
+    }
+    case "popup:sitePause": {
+      const site = await currentSite(assertDocument(message.expected));
+      if (typeof message.paused !== "boolean") return { ok: false };
+      await changePolicy(async () => {
+        await currentSite(message.expected);
+        await changeSitePause(site.url.hostname, message.paused);
+      });
+      return { ok: true };
+    }
+    case "popup:clearCookies":
+      assertDocument(message.expected);
+      if (message.id != null && typeof message.id !== "string") return { ok: false };
+      return clearCookies(message);
+    case "popup:analyze":
+      return analyzeSite(assertDocument(message.expected));
+    default:
+      return { ok: false };
+  }
+}
+
+chrome.runtime.onMessage.addListener((message, sender, reply) => {
+  handle(message, sender).then(reply, (error) => reply({
+    ok: false,
+    error: error instanceof Error && error.message
+      ? error.message : "No se pudo completar la acción en Chrome."
+  }));
   return true;
 });
-
-// ===== Protection Toggle =====
-async function handleToggleProtection(enabled) {
-  state.protectionEnabled = enabled;
-  chrome.storage.local.set({ protectionEnabled: enabled });
-
-  try {
-    if (enabled) {
-      await chrome.declarativeNetRequest.updateEnabledRulesets({
-        enableRulesetIds: ["tracker_rules"],
-      });
-    } else {
-      await chrome.declarativeNetRequest.updateEnabledRulesets({
-        disableRulesetIds: ["tracker_rules"],
-      });
-    }
-  } catch (e) {
-    // Silent fail
-  }
-
-  updateBadge();
-}
-
-// ===== Tracker Detection from Content Script =====
-function handleTrackerDetected(domain, tracker) {
-  if (!state.detectedTrackers[domain]) {
-    state.detectedTrackers[domain] = [];
-  }
-
-  const exists = state.detectedTrackers[domain].some(
-    (t) => t.name === tracker.name
-  );
-  if (!exists) {
-    state.detectedTrackers[domain].push({
-      ...tracker,
-      blockedAt: Date.now(),
-    });
-  }
-
-  state.blockedTrackers[domain] = (state.blockedTrackers[domain] || 0) + 1;
-
-  chrome.storage.local.set({
-    blockedTrackers: state.blockedTrackers,
-    detectedTrackers: state.detectedTrackers,
-  });
-
-  updateBadge(domain);
-}
-
-// ===== Badge Management =====
-function updateBadge(domain) {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (!tabs[0]) return;
-
-    const tabDomain = domain || getDomainFromUrl(tabs[0].url);
-    const trackerList = state.detectedTrackers[tabDomain] || [];
-    const count = trackerList.length;
-
-    if (state.protectionEnabled && count > 0) {
-      chrome.action.setBadgeText({ text: count.toString(), tabId: tabs[0].id });
-      chrome.action.setBadgeBackgroundColor({
-        color: "#ef4444",
-        tabId: tabs[0].id,
-      });
-    } else if (!state.protectionEnabled) {
-      chrome.action.setBadgeText({ text: "OFF", tabId: tabs[0].id });
-      chrome.action.setBadgeBackgroundColor({
-        color: "#6b7280",
-        tabId: tabs[0].id,
-      });
-    } else {
-      chrome.action.setBadgeText({ text: "", tabId: tabs[0].id });
-    }
-  });
-}
-
-// Tab events
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  chrome.tabs.get(activeInfo.tabId, (tab) => {
-    if (tab?.url) {
-      updateBadge(getDomainFromUrl(tab.url));
-    }
-  });
-});
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "loading" && changeInfo.url) {
-    const domain = getDomainFromUrl(changeInfo.url);
-    if (domain && !domain.startsWith("chrome")) {
-      delete state.detectedTrackers[domain];
-      delete state.blockedTrackers[domain];
-      delete state.networkBlocks[domain];
-    }
-  }
-  if (changeInfo.status === "complete") {
-    updateBadge();
-  }
-});
-
-// ===== Utility Functions =====
-function getDomainFromUrl(url) {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "";
-  }
-}
-
-// ===== Initialization =====
-updateBadge();
-
-// Watermark: GC-mj9cmgyy
-// Build: mj9cmgyy
-
-// Watermark: GC-mj9e32q8
-// Build: mj9e32q8

@@ -4,6 +4,21 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 
 ---
 
+## [1.3.0] - 2026-11-18
+
+- Configuración gráfica del asistente de Gemini para Windows y macOS y registro para Chrome y Microsoft Edge.
+- Distribución del asistente con instaladores por plataforma y verificación de firma.
+- Ajustes de la extensión con descarga del asistente, diagnóstico de conexión e ID para instalaciones de desarrollo.
+
+## [1.2.0] - 2026-11-18
+
+- Protección por sitio y global, con filtros visuales reversibles y confirmación de reglas activas.
+- EasyList y EasyPrivacy compiladas y lista de reputación local de PhishDestroy con aviso de navegación.
+- Nuevo popup con métricas independientes, estado de reputación y controles accesibles.
+- Gestión de cookies particionadas y verificación del borrado.
+- Asistente opcional por Native Messaging para usar la clave y cuenta de Gemini de cada usuario desde el llavero del sistema. La actualización elimina las claves que guardaba la extensión anterior.
+- Chrome 145 como versión mínima y paquetes separados para la extensión y el asistente.
+
 ## [1.1.0] - 2025-12-16
 
 ### 🎉 Nueva Funcionalidad: Bloqueo de Anuncios de YouTube
