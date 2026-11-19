@@ -8,6 +8,7 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 
 - Retirados del repositorio el ZIP de la 1.0.0, la caché de Chrome y archivos de desarrollo en desuso.
 - El ZIP de la extensión incluye los archivos de ejecución y los avisos de licencias y de procedencia. Las guías se consultan en GitHub.
+- Corregido el borrado de cookies particionadas en páginas HTTP locales como `localhost`.
 
 ## [1.3.0] - 2026-11-18
 

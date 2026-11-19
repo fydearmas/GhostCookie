@@ -148,6 +148,11 @@ try {
   const page = targetInfos.find(target => target.type === 'page' && target.url === 'about:blank');
   assert.ok(page, 'normal tab');
   const tab = await attach(page.targetId);
+  const {targetId: settingsTarget} = await send('Target.createTarget', {url: 'chrome-extension://' + id + '/options/options.html'});
+  const settings = await attach(settingsTarget);
+  await until(() => evaluate(settings, 'document.querySelector("#version")?.textContent === ' + JSON.stringify(version)
+    + ' && document.querySelector("#globalProtection")?.checked'), 'settings loaded');
+  await send('Target.activateTarget', {targetId: page.targetId});
   const siteUrl = 'http://' + fixtureHost + ':' + port + '/';
   await send('Page.navigate', {url: siteUrl}, tab);
   await until(() => evaluate(tab, 'document.readyState === "complete" && !!document.querySelector("#content")'), 'test page loaded');
@@ -187,10 +192,6 @@ try {
   await until(() => evaluate(tab, 'location.href === ' + JSON.stringify(warning) + ' && document.querySelector("h1")?.textContent.includes("Bloqueamos")'), 'local phishing warning');
   assert.equal(hits.get(phishingHost), undefined, 'phishing destination never contacted');
 
-  const {targetId: settingsTarget} = await send('Target.createTarget', {url: 'chrome-extension://' + id + '/options/options.html'});
-  const settings = await attach(settingsTarget);
-  await until(() => evaluate(settings, 'document.querySelector("#version")?.textContent === ' + JSON.stringify(version)
-    + ' && document.querySelector("#globalProtection")?.checked'), 'settings loaded');
   assert.ok(await evaluate(settings, 'document.querySelector("#connectNative").textContent.includes("Autorizar") && document.querySelector("#checkNative").disabled'));
   await evaluate(settings, 'document.querySelector("#globalProtection").click()');
   await until(() => evaluate(settings, 'chrome.declarativeNetRequest.getEnabledRulesets().then(rules => rules.length === 0)'), 'global protection disables rules');
@@ -198,6 +199,14 @@ try {
   await evaluate(settings, 'document.querySelector("#globalProtection").click()');
   await until(() => evaluate(settings, 'chrome.declarativeNetRequest.getEnabledRulesets().then(rules => rules.length === 4)'), 'global protection restores four rulesets');
   console.log(product, 'intercepta phishing y carga Ajustes con Gemini opcional y control global');
+
+  const otherPartition = {topLevelSite: 'https://localhost', hasCrossSiteAncestor: false};
+  const otherCookie = {
+    url: 'https://localhost/', name: 'qa_partitioned', value: 'other-partition', path: '/',
+    secure: true, httpOnly: true, sameSite: 'no_restriction', partitionKey: otherPartition,
+  };
+  const seededCookie = await evaluate(settings, 'chrome.cookies.set(' + JSON.stringify(otherCookie) + ')');
+  assert.deepEqual(seededCookie.partitionKey, otherPartition, 'cookie de control en la partición HTTPS');
 
   const cookieUrl = 'http://localhost:' + port + '/cookies';
   await send('Target.activateTarget', {targetId: page.targetId});
@@ -216,7 +225,11 @@ try {
   await until(() => evaluate(cookiePopup, 'document.querySelector("#notice").textContent.includes("Cookies eliminadas") || document.querySelector("#notice").textContent.includes("Se eliminó")'), 'respuesta de borrado total');
   const cookieReport = await evaluate(cookiePopup, '({remaining: document.querySelector("#cookiesList").textContent, notice: document.querySelector("#notice").textContent})');
   assert.deepEqual(cookieReport, {remaining: '', notice: 'Cookies eliminadas: 2.'}, 'borrado total con cookie particionada');
-  console.log(product, 'borra cookies HttpOnly, distingue rutas y elimina la cookie particionada');
+  const remainingCookie = await evaluate(settings, 'chrome.cookies.get(' + JSON.stringify({
+    url: otherCookie.url, name: otherCookie.name, partitionKey: otherPartition,
+  }) + ')');
+  assert.equal(remainingCookie?.value, otherCookie.value, 'misma cookie en la otra partición');
+  console.log(product, 'borra cookies HttpOnly, distingue rutas y conserva la cookie de la otra partición');
 } catch (error) {
   console.error(error.stack, '\n' + errorLog);
   process.exitCode = 1;

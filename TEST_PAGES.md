@@ -21,7 +21,7 @@ El script usa el ZIP descomprimido, un servidor en loopback y un perfil temporal
 | L01 · Bloqueo y filtro visual | Portada local `ghostcookie-smoke.test` | Se bloquean las dos solicitudes simuladas de anuncios y rastreo. Se oculta el anuncio de prueba y el contenido principal sigue visible. El popup recoge los rastreadores detectados. |
 | L02 · Pausa del sitio | Misma portada | Pausar restaura el anuncio visual sin recargar y deja pasar una solicitud de prueba nueva. Reanudar oculta de nuevo el anuncio. |
 | L03 · Reputación | Portada HTTP y destino de la lista simulado en loopback | HTTP aparece como señal informativa. Navegar a una coincidencia de la lista abre el aviso local de phishing, con cero peticiones al destino de prueba. |
-| L04 · Cookies | Portada local y `localhost/cookies` | El popup borra una cookie de sesión. En la segunda página distingue cookies `HttpOnly` del mismo nombre por ruta y etiqueta la cookie particionada. Borrar una ruta conserva la otra. El borrado total elimina las cookies restantes de ese sitio. |
+| L04 · Cookies | Portada local y `localhost/cookies` | El popup borra una cookie de sesión. En la segunda página distingue cookies `HttpOnly` del mismo nombre por ruta y etiqueta la cookie particionada. Borrar una ruta conserva la otra. El borrado total elimina las cookies de la partición HTTP y conserva una cookie del mismo nombre en la partición HTTPS. |
 | L05 · Ajustes globales | Ajustes de Ghost Cookie | Desactivar protección deshabilita los cuatro conjuntos de reglas y reactivarla los restaura. Gemini empieza como integración opcional en el perfil nuevo. |
 | M01 · Aislamiento | Wikipedia y HTTPBin en pestañas distintas | Pausa solo un sitio y confirma que el otro sigue activo. Crea una cookie ficticia en cada sitio de prueba y comprueba que borrarla en uno deja la del otro. Cambia de pestaña y verifica que no se mezclan las métricas. |
 | M02 · Actualización | Pausa un sitio en 1.3.0 y actualiza a 1.3.1 en el mismo perfil | Se conservan el ID, la pausa y la preferencia de clasificación de cookies. Para paquetes descomprimidos, reemplaza el contenido en la misma carpeta y pulsa **Recargar**. |
@@ -41,8 +41,8 @@ node tests/browser-smoke.mjs "$(command -v microsoft-edge)" dist/qa-1.3.1
 
 Las pruebas de Python verifican el protocolo del asistente, el rechazo de solicitudes de gestión de claves desde el navegador y el uso de la clave en el encabezado hacia el proveedor. En M03 usa una clave de prueba y guarda solo el resultado del análisis o el código de error. Consulta la [guía del asistente](native/README.md).
 
-### Hallazgo en la 1.3.1
+### Regresión corregida en la 1.3.1
 
-En Chrome y Edge 157, L04 distingue las rutas y borra las cookies normales. Al borrar todas, la cookie `qa_partitioned` creada en `http://localhost` queda en la lista. El popup indica que queda una cookie por borrar y el script devuelve un error en ese caso. El mismo caso se reprodujo con 1.3.0 en Chrome. Las pruebas en sitios públicos, la actualización desde 1.3.0 y el análisis con una clave real se registran aparte.
+El fallo se reprodujo en el caso L04 con la 1.3.0. La corrección se verificó en Chrome 158 y Edge 157. El script comprueba tanto el borrado de la cookie particionada en `http://localhost` como la conservación de la cookie del mismo nombre en la partición HTTPS.
 
 Registra cada ejecución con **Caso**, **Navegador y versión**, **Resultado** y **Evidencia**. Para un fallo, anota los pasos y el estado de la protección. Para publicidad variable, anota la URL y la solicitud o elemento observado.
