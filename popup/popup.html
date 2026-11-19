@@ -14,10 +14,11 @@
       <button id="openSettings" class="button quiet">Ajustes</button>
     </header>
 
-    <section class="site-card" aria-labelledby="currentSite">
-      <p class="section-label">Sitio actual</p>
-      <h1 id="currentSite">Cargando…</h1>
-      <p id="protectionStatus" class="status" role="status"></p>
+    <section class="site-card" aria-labelledby="protectionStatus">
+      <p class="section-label">Protección</p>
+      <h1 id="protectionStatus" class="status" aria-live="polite">Comprobando…</h1>
+      <p id="currentSite" class="current-site"></p>
+      <p id="phishingActive" class="muted" hidden>Los avisos de phishing siguen activos.</p>
       <div class="site-actions">
         <button id="sitePause" class="button primary" hidden>Pausar en este sitio</button>
         <button id="refresh" class="button quiet">Actualizar</button>
@@ -26,7 +27,7 @@
 
     <div id="siteDetails" hidden>
       <dl class="metrics" aria-label="Actividad de esta página">
-        <div><dt>Solicitudes bloqueadas</dt><dd id="trackersBlocked">—</dd></div>
+        <div><dt>Solicitudes bloqueadas</dt><dd id="trackersBlocked" data-unavailable>Sin datos</dd></div>
         <div><dt>Rastreadores detectados</dt><dd id="trackersDetected">—</dd></div>
         <div><dt>Elementos filtrados</dt><dd id="elementsHidden">—</dd></div>
       </dl>

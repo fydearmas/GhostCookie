@@ -1,5 +1,6 @@
 import {
-  changeSitePause, clearSitePauses, pagePolicy, protectionReady, readProtection, setGlobalProtection
+  changeSitePause, clearSitePauses, pagePolicy, protectionReady, readProtection,
+  resumePausedSite, setGlobalProtection
 } from "./protection.js";
 import { getReputation } from "./reputation.js";
 import { expireCookies, getSiteCookies, summarizeCookies } from "./site-cookies.js";
@@ -40,11 +41,11 @@ function writeDocument(tabId, update) {
   return work;
 }
 
-chrome.webNavigation.onCommitted.addListener(({ tabId, frameId, documentId, timeStamp, url }) => {
+chrome.webNavigation.onCommitted.addListener(({ tabId, frameId, documentId, url }) => {
   if (frameId !== 0) return;
   const key = recordKey(tabId);
   void writeDocument(tabId, () => webUrl(url)
-    ? chrome.storage.session.set({ [key]: { documentId, since: timeStamp, detections: [], hidden: 0 } })
+    ? chrome.storage.session.set({ [key]: { documentId, detections: [], hidden: 0 } })
     : chrome.storage.session.remove(key)).catch(() => {});
 });
 
@@ -92,7 +93,7 @@ async function reportContent(sender, message) {
     const key = recordKey(tabId);
     const record = (await chrome.storage.session.get(key))[key];
     if (record && record.documentId !== site.documentId) return { ok: false };
-    const current = record ?? { documentId: site.documentId, since: Date.now(), detections: [], hidden: 0 };
+    const current = record ?? { documentId: site.documentId, detections: [], hidden: 0 };
     const unique = new Map(current.detections.map((item) => [item.name, item]));
     const supplied = Array.isArray(message.detections) ? message.detections.slice(0, 100) : [];
     for (const item of supplied) {
@@ -107,12 +108,10 @@ async function reportContent(sender, message) {
   });
 }
 
-async function countBlocks(site, since) {
-  if (typeof since !== "number") return null;
+async function countBlocks(tabId) {
   try {
-    const { rulesMatchedInfo } = await chrome.declarativeNetRequest.getMatchedRules({
-      tabId: site.tabId, minTimeStamp: since
-    });
+    // Chromium associates matches for a tab ID with its current document.
+    const { rulesMatchedInfo } = await chrome.declarativeNetRequest.getMatchedRules({ tabId });
     return rulesMatchedInfo.filter(({ rule }) => NETWORK_FILTERS.has(rule.rulesetId) && rule.ruleId < 1000000).length;
   } catch {
     return null;
@@ -123,7 +122,7 @@ async function siteSummary(site, protection) {
   const record = await readDocument(site);
   const policy = pagePolicy(protection, site.url.hostname);
   const [blocked, reputation, cookies] = await Promise.all([
-    countBlocks(site, record?.since),
+    countBlocks(site.tabId),
     getReputation(site.url),
     getSiteCookies(site.tabId, site.url).catch(() => null)
   ]);
@@ -251,6 +250,10 @@ async function handle(message, sender) {
       if (sender.url !== OPTIONS || typeof message.enabled !== "boolean") return { ok: false };
       await chrome.storage.local.set({ classifyCookies: message.enabled });
       return { ok: true };
+    case "settings:resumeSite":
+      if (sender.url !== OPTIONS || typeof message.domain !== "string") return { ok: false };
+      await changePolicy(() => resumePausedSite(message.domain));
+      return { ok: true, protection: await readProtection() };
     case "settings:resetPauses":
       if (sender.url !== OPTIONS) return { ok: false };
       await changePolicy(clearSitePauses);

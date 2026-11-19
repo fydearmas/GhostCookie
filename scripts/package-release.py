@@ -8,8 +8,7 @@ MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 VERSION = MANIFEST["version"]
 DIST = ROOT / "dist"
 EXTENSION = {
-    "manifest.json", "_locales/es/messages.json", "LICENSE", "README.md", "CHANGELOG.md",
-    "DOCUMENTATION.md", "BUILD_README.md", "PROTECTION.md", "native/README.md",
+    "manifest.json", "_locales/es/messages.json", "LICENSE",
     "background/service-worker.js", "background/protection.js",
     "background/reputation.js", "background/site-cookies.js",
     "popup/popup.html", "popup/popup.js", "popup/popup.css", "popup/theme.css",

@@ -74,6 +74,12 @@ export async function changeSitePause(host, paused) {
   await writePausedSites(next);
 }
 
+export async function resumePausedSite(domain) {
+  const { pausedSites } = await readProtection();
+  const next = pausedSites.filter((site) => site !== domain);
+  if (next.length !== pausedSites.length) await writePausedSites(next);
+}
+
 export function clearSitePauses() {
   return writePausedSites([]);
 }

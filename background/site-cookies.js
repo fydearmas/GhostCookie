@@ -52,8 +52,12 @@ export async function expireCookies(cookies) {
   for (let start = 0; start < cookies.length; start += batchSize) {
     await Promise.allSettled(cookies.slice(start, start + batchSize).map((cookie) => {
       const host = cookie.domain.replace(/^\./, "");
+      const partition = cookie.partitionKey;
+      // Chromium checks the scheme when expiring a same-site partition.
+      const scheme = partition?.topLevelSite?.startsWith("http://") && !partition.hasCrossSiteAncestor
+        ? "http" : "https";
       return chrome.cookies.set({
-        url: "https://" + host + "/",
+        url: scheme + "://" + host + "/",
         name: cookie.name,
         value: "",
         path: cookie.path,
@@ -63,7 +67,7 @@ export async function expireCookies(cookies) {
         expirationDate: 1,
         storeId: cookie.storeId,
         ...(cookie.hostOnly ? {} : { domain: cookie.domain }),
-        ...(cookie.partitionKey ? { partitionKey: cookie.partitionKey } : {})
+        ...(partition ? { partitionKey: partition } : {})
       });
     }));
   }

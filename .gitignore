@@ -25,6 +25,7 @@ desktop.ini
 
 # Paquetes generados y caché de Chrome
 dist/
+/*.zip
 _metadata/
 __pycache__/
 

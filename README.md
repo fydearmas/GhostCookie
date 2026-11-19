@@ -1,4 +1,4 @@
-# Ghost Cookie 1.3.0
+# Ghost Cookie 1.3.1
 
 Extensión de escritorio para **Chrome y Microsoft Edge** con soporte para las reglas de Manifest V3 de Chromium 145 o posterior. Bloquea anuncios y rastreadores, muestra la actividad de la página y advierte sobre sitios que coinciden con la lista local de reputación.
 
@@ -6,7 +6,7 @@ Extensión de escritorio para **Chrome y Microsoft Edge** con soporte para las r
 
 Las versiones distribuidas en tiendas se instalan desde la ficha de cada navegador. Para una instalación descomprimida de desarrollo:
 
-1. Extrae **ghost-cookie-v1.3.0.zip** en una carpeta fija.
+1. Extrae **ghost-cookie-v1.3.1.zip** en una carpeta fija.
 2. Abre la página de extensiones de Chrome en **chrome://extensions/**.
 3. Activa **Modo de desarrollador**, pulsa **Cargar descomprimida** y elige la carpeta que contiene **manifest.json**.
 4. Abre una página nueva o recarga la pestaña donde quieras usar el filtro visual. Fija el icono de Ghost Cookie si quieres abrir el panel desde la barra.

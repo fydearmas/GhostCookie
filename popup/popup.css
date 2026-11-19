@@ -4,13 +4,15 @@ body { width: 390px; min-height: 450px; overflow-x: hidden; }
 .wordmark { display: flex; gap: .55rem; align-items: center; color: var(--violet); font-size: 1rem; font-weight: 750; }
 .site-card, .reputation-card { display: grid; gap: .45rem; padding: .85rem; border-radius: 12px; border: 1px solid var(--border); }
 .site-card { background: linear-gradient(135deg, #282137, var(--surface)); }
-.site-card h1 { overflow-wrap: anywhere; }
+.site-card h1 { font-size: 1.34rem; line-height: 1.2; }
+.current-site { color: var(--text); font-size: .9rem; overflow-wrap: anywhere; }
 .site-actions, .ai-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
 .site-actions { margin-top: .3rem; }
 #siteDetails { display: grid; gap: .75rem; }
 .metrics { display: grid; gap: .38rem; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
 .metrics > div { display: flex; flex-direction: column; padding: .6rem; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
 .metrics dd { order: -1; margin: 0 0 .13rem; color: var(--violet); font-size: 1.35rem; font-weight: 730; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.metrics dd[data-unavailable] { color: var(--muted); font-size: .86rem; line-height: 1.73rem; }
 .metrics dt { color: var(--muted); font-size: .72rem; line-height: 1.2; }
 .reputation-card { background: var(--surface); }
 .signals { margin: 0; padding-inline-start: 1.1rem; color: var(--amber); font-size: .8rem; }
