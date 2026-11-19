@@ -10,6 +10,7 @@ on:
       - scripts/update-lists.mjs
       - scripts/compile-filters.mjs
       - scripts/compile-reputation.mjs
+      - tests/browser-smoke.mjs
 
 permissions:
   contents: read
@@ -52,6 +53,9 @@ jobs:
           version=$(node -p "require('./manifest.json').version")
           python3 -m zipfile -e "dist/ghost-cookie-v$version.zip" "$RUNNER_TEMP/extension"
           node tests/browser-smoke.mjs "$(command -v google-chrome)" "$RUNNER_TEMP/extension"
+          # The runner image can install Edge without the required setuid bit.
+          sudo chown root:root /opt/microsoft/msedge/msedge-sandbox
+          sudo chmod 4755 /opt/microsoft/msedge/msedge-sandbox
           node tests/browser-smoke.mjs "$(command -v microsoft-edge)" "$RUNNER_TEMP/extension"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: steps.prepare.outputs.changed == 'true'
