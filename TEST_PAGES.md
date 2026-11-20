@@ -22,12 +22,14 @@ El script usa el ZIP descomprimido, un servidor en loopback y un perfil temporal
 | L02 · Pausa del sitio | Misma portada | Pausar restaura el anuncio visual sin recargar y deja pasar una solicitud de prueba nueva. Reanudar oculta de nuevo el anuncio. |
 | L03 · Reputación | Portada HTTP y destino de la lista simulado en loopback | HTTP aparece como señal informativa. Navegar a una coincidencia de la lista abre el aviso local de phishing, con cero peticiones al destino de prueba. |
 | L04 · Cookies | Portada local y `localhost/cookies` | El popup borra una cookie de sesión. En la segunda página distingue cookies `HttpOnly` del mismo nombre por ruta y etiqueta la cookie particionada. Borrar una ruta conserva la otra. El borrado total elimina las cookies de la partición HTTP y conserva una cookie del mismo nombre en la partición HTTPS. |
-| L05 · Ajustes globales | Ajustes de Ghost Cookie | Desactivar protección muestra **En pausa global** y deshabilita los cuatro conjuntos de reglas. Reactivarla los restaura. Gemini empieza como integración opcional. |
+| L05 · Ajustes globales | Ajustes de Ghost Cookie | Desactivar protección muestra **En pausa global** y deshabilita todos los conjuntos activos. Reactivarla restaura las listas base y la preferencia regional. |
 | L06 · Contador de bloqueos | Portada local y dos páginas de control | Las dos coincidencias siguen en el contador al reconstruir el registro del documento. Una navegación nueva sin coincidencias muestra **0** y la consulta sin permiso temporal muestra **Sin datos**. |
 | L07 · Listas y pausas | Ajustes de Ghost Cookie | Las fechas coinciden con los metadatos en el ZIP. Reanudar un dominio deja la otra pausa en vigor. |
+| L08 · Diagnóstico temporal | Dos pestañas en la misma portada local | Pausar y recargar afecta solo a la pestaña elegida. Reanudar y recargar restaura el bloqueo. Visitar otro dominio termina la pausa y el aviso de phishing sigue activo. |
+| L09 · Filtro visual por dominio | Página local con un dominio de EasyList simulado | Se oculta el elemento con la clase de anuncio. El contenido principal y los elementos equivalentes de otros sitios permanecen visibles. |
+| L10 · Filtro regional | Página local con un dominio y un recurso de prueba de AdGuard | La lista comienza desactivada. Al activarla se aplica el selector y se bloquea la solicitud de prueba tras recargar. El popup atribuye la coincidencia a AdGuard. Cambiar la protección global conserva la preferencia. Desactivar el filtro regional restaura el elemento. |
 | M01 · Aislamiento | Wikipedia y HTTPBin en pestañas distintas | Pausa solo un sitio y confirma que el otro sigue activo. Crea una cookie ficticia en cada sitio de prueba y comprueba que borrarla en uno deja la del otro. Cambia de pestaña y verifica que no se mezclan las métricas. |
-| M02 · Actualización | Pausa un sitio en 1.3.0 y actualiza a 1.3.1 en el mismo perfil | Se conservan el ID, la pausa y la preferencia de clasificación de cookies. Para paquetes descomprimidos, reemplaza el contenido en la misma carpeta y pulsa **Recargar**. |
-| M03 · Gemini | Wikipedia y **Ajustes → Asistente local de Gemini** | Comprueba permiso sin conceder, asistente conectado sin clave y asistente configurado. Con una clave propia, solicita un análisis y verifica que aparece la respuesta. Quita el permiso y comprueba que el análisis queda deshabilitado. Repite con Chrome y Edge y con el instalador o registro de cada sistema compatible. |
+| M02 · Actualización | Pausa un sitio en 1.3.0 y actualiza a 1.3.1 en el mismo perfil | Se conservan el ID, la pausa y la preferencia de clasificación de cookies. El filtro regional empieza desactivado en ese perfil. Para paquetes descomprimidos, reemplaza el contenido en la misma carpeta y pulsa **Recargar**. |
 
 ### Ejecutar las pruebas locales
 
@@ -40,8 +42,6 @@ python3 -m zipfile -e dist/ghost-cookie-v1.3.1.zip dist/qa-1.3.1
 node tests/browser-smoke.mjs "$(command -v google-chrome)" dist/qa-1.3.1
 node tests/browser-smoke.mjs "$(command -v microsoft-edge)" dist/qa-1.3.1
 ```
-
-Las pruebas de Python verifican el protocolo del asistente, el rechazo de solicitudes de gestión de claves desde el navegador y el uso de la clave en el encabezado hacia el proveedor. En M03 usa una clave de prueba y guarda solo el resultado del análisis o el código de error. Consulta la [guía del asistente](native/README.md).
 
 ### Regresión corregida en la 1.3.1
 

@@ -51,10 +51,12 @@
   const observer = new MutationObserver(queueMutations);
   let enabled = false;
   let cosmeticSheet;
+  let regionalSelectors = [];
   let cosmeticSelector = "";
   let scanTimer;
   let policyRevision = 0;
   let lastReport;
+  let detectionRevision = 0;
 
   function domainsFor(hostname) {
     const labels = hostname.toLowerCase().replace(/\.$/, "").split(".");
@@ -77,6 +79,7 @@
     const selectors = skipAllCosmetics ? [] : [
       ...(skipGenericCosmetics ? [] : generic),
       ...hosts.flatMap((host) => Object.hasOwn(domains, host) ? domains[host] : []),
+      ...regionalSelectors,
       ...(youtube?.selectors ?? []),
     ];
     const usableSelectors = [...new Set(selectors)].filter(
@@ -118,11 +121,15 @@
     }
   }
 
-  function setPolicy(nextEnabled) {
-    if (enabled === nextEnabled) return;
+  function setPolicy(nextEnabled, nextSelectors = []) {
+    const changed = nextSelectors.length !== regionalSelectors.length ||
+      nextSelectors.some((selector, index) => selector !== regionalSelectors[index]);
+    if (enabled === nextEnabled && !changed) return;
+    if (enabled) stop();
+    if (changed) cosmeticSheet = undefined;
+    regionalSelectors = nextSelectors;
     enabled = nextEnabled;
     if (enabled) start();
-    else stop();
   }
 
   function queueRoot(root) {
@@ -154,8 +161,16 @@
     for (const match of root.querySelectorAll(selector)) inspect(match);
   }
 
-  function recordDetection(name, category) {
-    if (!detections.has(name)) detections.set(name, { name, category });
+  function recordDetection(name, category, host) {
+    if (!detections.has(name)) {
+      detections.set(name, { name, category, domains: [] });
+      detectionRevision += 1;
+    }
+    const { domains } = detections.get(name);
+    if (host && domains.length < 8 && !domains.includes(host)) {
+      domains.push(host);
+      detectionRevision += 1;
+    }
   }
 
   function inspectSource(element) {
@@ -167,7 +182,7 @@
         for (const domain of domainsFor(url.hostname)) {
           const signature = NETWORK_SIGNATURES.get(domain);
           if (signature) {
-            recordDetection(...signature);
+            recordDetection(...signature, url.hostname);
             return;
           }
         }
@@ -175,7 +190,7 @@
           (url.hostname === "facebook.com" || url.hostname.endsWith(".facebook.com")) &&
           (url.pathname === "/tr" || url.pathname === "/tr/")
         ) {
-          recordDetection("Facebook Pixel", "Social Media");
+          recordDetection("Facebook Pixel", "Social Media", url.hostname);
         }
       } catch {
         // Ignore malformed attributes.
@@ -212,13 +227,13 @@
     }
     youtube?.skipAdIfAvailable();
     const hidden = filteredElements.size;
-    if (lastReport?.hidden === hidden && lastReport.detected === detections.size) return;
+    if (lastReport?.hidden === hidden && lastReport.detectionRevision === detectionRevision) return;
     const report = {
       action: "content:report",
       detections: [...detections.values()],
       hidden,
     };
-    lastReport = { hidden, detected: detections.size };
+    lastReport = { hidden, detectionRevision };
     chrome.runtime.sendMessage(report).catch(() => {});
   }
 
@@ -226,7 +241,7 @@
     const revision = policyRevision;
     chrome.runtime.sendMessage({ action: "content:getPolicy" }).then((policy) => {
       if (revision !== policyRevision || !policy?.ok || typeof policy.enabled !== "boolean") return;
-      setPolicy(policy.enabled);
+      setPolicy(policy.enabled, policy.regionalSelectors);
       if (enabled) {
         lastReport = undefined;
         queueRoot(document);
@@ -239,7 +254,7 @@
     if (sender.id !== chrome.runtime.id || message?.action !== "content:policy" ||
         typeof message.enabled !== "boolean") return;
     policyRevision += 1;
-    setPolicy(message.enabled);
+    setPolicy(message.enabled, message.regionalSelectors);
   });
   window.addEventListener("pageshow", (event) => {
     if (event.persisted) refreshPolicy();

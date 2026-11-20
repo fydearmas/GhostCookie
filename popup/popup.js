@@ -5,11 +5,20 @@ const labels = {
   "lookalike-domain": "El dominio se parece al de una marca",
   "known-threat": "Coincidencia con la lista local"
 };
+const riskExplanation = {
+  known: "El dominio coincide con la lista local de PhishDestroy. Abre el sitio oficial antes de introducir datos.",
+  unavailable: "No se pudo consultar la lista local de PhishDestroy.",
+  review: "Son señales observadas en la dirección de la página. Verifica el dominio antes de iniciar sesión o pagar.",
+  none: "El dominio no coincide con sitios reportados en la lista instalada de PhishDestroy."
+};
+const listNames = { easylist: "EasyList", easyprivacy: "EasyPrivacy", tracker_rules: "Ghost Cookie", adguard_es_pt: "AdGuard Español/Portugués" };
+const categories = { Analytics: "Analítica", "Social Media": "Redes sociales", Advertising: "Publicidad" };
 const activityTab = byId("tabActivity");
 const cookiesTab = byId("tabCookies");
 const sitePause = byId("sitePause");
+const visitPause = byId("visitPause");
+const visitResume = byId("visitResume");
 const bulk = byId("clearAllCookies");
-const analyze = byId("analyze");
 const refresh = byId("refresh");
 const confirmCookies = byId("confirmCookies");
 let snapshot;
@@ -31,7 +40,8 @@ async function request(action, fields = {}) {
 function updateButtons() {
   refresh.disabled = busy;
   sitePause.disabled = busy;
-  analyze.disabled = busy;
+  visitPause.disabled = busy;
+  visitResume.disabled = busy;
   bulk.disabled = busy || !snapshot?.site?.cookies?.length;
   for (const button of byId("cookiesList").querySelectorAll("button")) button.disabled = busy;
 }
@@ -50,23 +60,20 @@ function createRow(title, subtitle) {
 }
 
 function render(response) {
-  const previous = snapshot?.site;
   snapshot = response;
   const { site, protection } = response;
-  if (previous?.documentId !== site?.documentId) {
-    byId("aiContent").hidden = true;
-    byId("aiContent").textContent = "";
-  }
-
   byId("currentSite").textContent = site?.host || "Sin página web activa";
   byId("siteDetails").hidden = !site;
-  sitePause.hidden = !site || !protection.enabled;
+  sitePause.hidden = !site || !protection.enabled || site.visitPaused;
+  visitResume.hidden = !protection.enabled || !site?.visitPaused || Boolean(site.pause);
+  byId("troubleshooting").hidden = !site?.filtering;
   const protectionStatus = byId("protectionStatus");
   if (protection.partial) status(protectionStatus, "Estado de protección incompleto", "warn");
   else if (!protection.enabled) status(protectionStatus, "En pausa global", "warn");
   else if (site?.pause) status(protectionStatus, "En pausa en este sitio", "warn");
+  else if (site?.visitPaused) status(protectionStatus, "En pausa en esta pestaña", "warn");
   else status(protectionStatus, "Activa", "good");
-  byId("phishingActive").hidden = !protection.enabled || !site?.pause;
+  byId("phishingActive").hidden = !protection.enabled || !(site?.pause || site?.visitPaused);
   if (!site) return;
 
   sitePause.textContent = site.pause && site.pause !== site.host ? "Reanudar " + site.pause
@@ -79,12 +86,24 @@ function render(response) {
   byId("elementsHidden").textContent = site.hidden;
   byId("cookiesCount").textContent = site.cookies?.length ?? "—";
 
+  byId("activityExplanation").textContent = site.filtering
+    ? "Los bloqueos cuentan solicitudes de red. Las detecciones señalan rastreadores vistos en la página y el filtro visual oculta elementos."
+    : "El filtrado de anuncios y rastreadores está en pausa para esta página.";
+  const sources = Object.entries(listNames)
+    .filter(([id]) => site.blockSources?.[id] > 0)
+    .map(([id, name]) => `${name} ${site.blockSources[id]}`);
+  const blockSources = byId("blockSources");
+  blockSources.textContent = sources.length ? `Bloqueos por lista · ${sources.join(" · ")}` : "";
+  blockSources.hidden = !sources.length;
+
   const { threat, indicators } = site.reputation;
   const risk = byId("riskStatus");
   if (threat === "known") status(risk, "Sitio reportado", "bad");
   else if (threat === "unavailable") status(risk, "Lista local no disponible", "warn");
   else if (indicators.length) status(risk, "Señales para revisar", "warn");
   else status(risk, "Sin amenazas conocidas");
+  const riskKey = threat === "none" && indicators.length ? "review" : threat;
+  byId("riskExplanation").textContent = riskExplanation[riskKey];
   byId("riskIndicators").replaceChildren(...indicators.filter((key) => labels[key]).map((key) => {
     const item = document.createElement("li");
     item.textContent = labels[key];
@@ -95,7 +114,10 @@ function render(response) {
   byId("trackerEmpty").textContent = site.filtering
     ? "Sin rastreadores detectados."
     : "La detección de rastreadores está en pausa.";
-  byId("trackerList").replaceChildren(...site.detections.map(({ name, category }) => createRow(name, category)));
+  byId("trackerList").replaceChildren(...site.detections.map(({ name, category, domains }) => {
+    const source = domains?.length ? domains.join(", ") : "Código en la página";
+    return createRow(name, `${categories[category] ?? category} · ${source}`);
+  }));
 
   byId("cookieEmpty").hidden = Boolean(site.cookies?.length);
   byId("cookieEmpty").textContent = site.cookies ? "Sin cookies de este sitio." : "Chrome no pudo consultar estas cookies.";
@@ -177,6 +199,12 @@ sitePause.addEventListener("click", () => void operate(async () => {
   await request("popup:sitePause", { paused: !snapshot.site.pause, expected: currentDocument() });
   await load();
 }));
+for (const button of [visitPause, visitResume]) {
+  button.addEventListener("click", () => void operate(async () => {
+    await request("popup:troubleshoot", { expected: currentDocument() });
+    window.close();
+  }));
+}
 bulk.addEventListener("click", () => {
   confirmCookies.returnValue = "";
   confirmCookies.showModal();
@@ -184,16 +212,4 @@ bulk.addEventListener("click", () => {
 confirmCookies.addEventListener("close", () => {
   if (confirmCookies.returnValue === "delete") void deleteCookies(null);
 });
-analyze.addEventListener("click", () => void operate(async () => {
-  const content = byId("aiContent");
-  content.hidden = false;
-  content.textContent = "Consultando al asistente local…";
-  try {
-    const result = await request("popup:analyze", { expected: currentDocument() });
-    content.textContent = result.text;
-  } catch (error) {
-    content.textContent = error.message;
-  }
-}));
-
 void operate(load);

@@ -12,10 +12,4 @@
 .paused-list { display: grid; gap: .35rem; max-height: 14rem; margin: .45rem 0; padding: .2rem; overflow: auto; list-style: none; overflow-wrap: anywhere; }
 .paused-list .button { min-height: 44px; }
 #pausedEmpty { margin-block: .45rem; }
-.setup-steps { margin-block: 0; padding-inline-start: 1.35rem; }
-.setup-steps li + li { margin-top: .35rem; }
-.identifier { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; }
-.identifier code { padding: .5rem; background: var(--background); border: 1px solid var(--border); border-radius: 6px; overflow-wrap: anywhere; }
 .status:empty { display: none; }
-
-.manual-copy { margin-block: .55rem; }

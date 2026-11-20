@@ -4,17 +4,23 @@ import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promi
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { normalizeRegionalSource, regionalMetadata, regionalUrl } from "./compile-regional.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const reportDir = resolve(process.argv[2] ?? join(root, "dist", "list-update"));
 const easyLock = "rules/easylist.lock.json";
 const phishLock = "reputation/source.json";
+const regionalDir = "rules/adguard-es-pt";
+const regionalLock = regionalDir + "/source.json";
+const regionalSource = regionalDir + "/source.txt";
 const phishFeed = "dns/content_active.json";
 const feeds = [
   { name: "EasyList (red)", path: "rules/easylist.json", read: networkRules },
   { name: "EasyPrivacy (red)", path: "rules/easyprivacy.json", read: networkRules },
   { name: "Filtros visuales", path: "rules/cosmetic-selectors.js", read: cosmeticRules },
   { name: "PhishDestroy", path: "rules/reputation.json", read: networkRules },
+  { name: "AdGuard Español/Portugués (red)", path: regionalDir + "/network.json", read: networkRules },
+  { name: "AdGuard Español/Portugués (visual)", path: regionalDir + "/cosmetic.json", read: (source) => cosmeticEntries(JSON.parse(source)) },
 ];
 const maxFeedBytes = 20 * 1024 * 1024;
 const shaPattern = /^[0-9a-f]{40}$/;
@@ -73,7 +79,10 @@ function networkRules(source) {
 function cosmeticRules(source) {
   const assignment = source.match(/^globalThis\.ghostCookieCosmeticRules = (.+);$/m);
   if (!assignment) throw new Error("Formato inesperado de los filtros visuales.");
-  const { generic, domains, exceptions, skipGeneric, skipAll } = JSON.parse(assignment[1]);
+  return cosmeticEntries(JSON.parse(assignment[1]));
+}
+
+function cosmeticEntries({ generic = [], domains, exceptions, skipGeneric = [], skipAll }) {
   return new Set([
     ...generic.map((selector) => JSON.stringify(["global", selector])),
     ...Object.entries(domains).flatMap(([domain, selectors]) => selectors.map((selector) => JSON.stringify(["sitio", domain, selector]))),
@@ -95,14 +104,25 @@ function listDiff(feed, before, after) {
   };
 }
 
+function compareVersions(version, currentVersion) {
+  const current = currentVersion.split(".").map(Number);
+  const difference = version.split(".").map((part, index) => Number(part) - current[index]);
+  return difference.find((value) => value !== 0) ?? 0;
+}
+
 async function prepareLists(stage) {
-  const [easy, phish, easyCurrent, phishCurrent] = await Promise.all([
+  const [easy, phish, easyCurrent, phishCurrent, regionalText, regionalCurrent] = await Promise.all([
     latestRevision("easylist/easylist"),
     latestRevision("phishdestroy/destroylist", phishFeed),
     readFile(join(root, easyLock), "utf8").then(JSON.parse),
     readFile(join(root, phishLock), "utf8").then(JSON.parse),
+    download(regionalUrl, 2 * 1024 * 1024).then(normalizeRegionalSource),
+    readFile(join(root, regionalLock), "utf8").then(JSON.parse),
   ]);
-  if (easy.date < easyCurrent.revisionUtc || phish.date.slice(0, 10) < phishCurrent.snapshotDate) {
+  const regional = regionalMetadata(regionalText);
+  const regionalChange = compareVersions(regional.version, regionalCurrent.version);
+  if (easy.date < easyCurrent.revisionUtc || phish.date.slice(0, 10) < phishCurrent.snapshotDate ||
+      regionalChange < 0 || regional.revisionUtc < regionalCurrent.revisionUtc) {
     throw new Error("Una fuente devolvió una revisión anterior a la instalada.");
   }
 
@@ -110,8 +130,20 @@ async function prepareLists(stage) {
   const sources = [
     { name: "EasyList y EasyPrivacy", old: easyCurrent.commit, next: easy.commit },
     { name: "PhishDestroy", old: phishCurrent.revision, next: phish.commit },
+    { name: "AdGuard Español/Portugués", old: regionalCurrent.version, next: regional.version },
   ];
   const changed = [];
+  if (regionalChange > 0 || easy.commit !== easyCurrent.commit) {
+    await copyFile(join(root, "scripts/filter-compiler.mjs"), join(stage, "scripts/filter-compiler.mjs"));
+  }
+  if (regionalChange > 0) {
+    await mkdir(join(stage, regionalDir));
+    await writeFile(join(stage, regionalSource), regionalText);
+    await writeFile(join(stage, regionalLock), JSON.stringify(regional, null, 2) + "\n");
+    await copyFile(join(root, "scripts/compile-regional.mjs"), join(stage, "scripts/compile-regional.mjs"));
+    execFileSync(process.execPath, [join(stage, "scripts/compile-regional.mjs")], { stdio: "inherit" });
+    changed.push(regionalLock, regionalSource, ...feeds.filter(({ path }) => path.startsWith(regionalDir)).map(({ path }) => path));
+  }
   if (easy.commit !== easyCurrent.commit) {
     const archiveUrl = "https://codeload.github.com/easylist/easylist/tar.gz/" + easy.commit;
     const archive = await download(archiveUrl, maxFeedBytes);

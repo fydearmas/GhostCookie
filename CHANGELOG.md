@@ -6,18 +6,23 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 
 ## [1.3.1]
 
+- Añadido el filtro opcional AdGuard Español/Portugués para anuncios y elementos visuales regionales.
+- Los PR ejecutan su propia validación del ZIP en Chrome y Edge. El flujo programado sigue preparando propuestas de listas.
+
+- Retirada la integración externa de análisis y su permiso. El panel explica localmente los bloqueos, las detecciones y las señales de reputación.
+- Añadida la pausa de diagnóstico por pestaña con recarga y reanudación. Los avisos de phishing siguen activos durante la pausa.
+- Ampliado el filtro visual con selectores de atributos limitados a los dominios definidos por EasyList y EasyPrivacy.
+
 - Retirados del repositorio el ZIP de la 1.0.0, la caché de Chrome y archivos de desarrollo en desuso.
 - El ZIP de la extensión incluye los archivos de ejecución y los avisos de licencias y de procedencia. Las guías se consultan en GitHub.
 - Corregido el borrado de cookies particionadas en páginas HTTP locales como `localhost`.
-- GitHub Actions prepara cada semana nuevas revisiones de EasyList, EasyPrivacy y PhishDestroy y propone los cambios validados en un PR.
+- GitHub Actions prepara cada semana nuevas revisiones de EasyList, EasyPrivacy, PhishDestroy y AdGuard Español/Portugués y propone los cambios validados en un PR.
 - El contador del popup usa las coincidencias del documento activo y distingue **0** de **Sin datos**.
 - El popup resalta el estado de protección. Ajustes muestra las fechas de las listas instaladas y permite reanudar cada dominio.
 
 ## [1.3.0] - 2026-11-18
 
-- Configuración gráfica del asistente de Gemini para Windows y macOS y registro para Chrome y Microsoft Edge.
-- Distribución del asistente con instaladores por plataforma y verificación de firma.
-- Ajustes de la extensión con descarga del asistente, diagnóstico de conexión e ID para instalaciones de desarrollo.
+- Preparación de la primera publicación en Chrome Web Store y Microsoft Edge Add-ons.
 
 ## [1.2.0] - 2026-11-18
 
@@ -25,8 +30,7 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 - EasyList y EasyPrivacy compiladas y lista de reputación local de PhishDestroy con aviso de navegación.
 - Nuevo popup con métricas independientes, estado de reputación y controles accesibles.
 - Gestión de cookies particionadas y verificación del borrado.
-- Asistente opcional por Native Messaging para usar la clave y cuenta de Gemini de cada usuario desde el llavero del sistema. La actualización elimina las claves que guardaba la extensión anterior.
-- Chrome 145 como versión mínima y paquetes separados para la extensión y el asistente.
+- Chrome 145 como versión mínima.
 
 ## [1.1.0] - 2025-12-16
 
@@ -164,10 +168,6 @@ Primera versión de Ghost Cookie con todas las funcionalidades principales.
 - Configuración de funciones:
   - Mostrar/ocultar score de privacidad
   - Activar/desactivar clasificación de cookies
-- Integración opcional con Gemini AI:
-  - Campo para API key
-  - Botón de prueba de conexión
-  - Visibilidad de API key (mostrar/ocultar)
 - Gestión de datos:
   - Botón para borrar todos los datos
 - Diseño consistente con el popup
@@ -278,7 +278,6 @@ Ninguno reportado en esta versión.
 
 ### 📝 Notas
 
-- La integración con Gemini AI es completamente opcional
 - Todos los datos se guardan localmente
 - No se envía información a servidores externos
 - Compatible con Chrome 88+

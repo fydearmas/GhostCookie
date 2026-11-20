@@ -21,8 +21,17 @@
       <p id="phishingActive" class="muted" hidden>Los avisos de phishing siguen activos.</p>
       <div class="site-actions">
         <button id="sitePause" class="button primary" hidden>Pausar en este sitio</button>
+        <button id="visitResume" class="button primary" hidden>Reanudar y recargar</button>
         <button id="refresh" class="button quiet">Actualizar</button>
       </div>
+      <details id="troubleshooting" class="troubleshooting" hidden>
+        <summary>Este sitio no funciona</summary>
+        <p class="muted">Prueba a recargar esta pestaña con el filtrado en pausa. Puedes reanudarlo aquí. La pausa termina al salir del dominio o cerrar la pestaña.</p>
+        <div class="site-actions">
+          <button id="visitPause" class="button quiet">Pausar y recargar</button>
+          <a class="button quiet" href="https://github.com/fydearmas/GhostCookie/issues/new" target="_blank" rel="noopener noreferrer">Reportar problema</a>
+        </div>
+      </details>
     </section>
 
     <div id="siteDetails" hidden>
@@ -36,14 +45,7 @@
         <h2 id="riskTitle">Reputación del sitio</h2>
         <p id="riskStatus" class="status"></p>
         <ul id="riskIndicators" class="signals"></ul>
-        <div class="ai-actions">
-          <button id="analyze" class="button quiet">Analizar con IA</button>
-          <details id="aiPayload">
-            <summary>Datos enviados</summary>
-            <p class="muted">Tu asistente local envía a Gemini los recuentos de bloqueos, rastreadores y cookies, y las señales de reputación.</p>
-          </details>
-        </div>
-        <p id="aiContent" class="ai-result" role="status" hidden></p>
+        <p id="riskExplanation" class="muted"></p>
       </section>
 
       <div class="tab-list" role="tablist" aria-label="Detalles del sitio">
@@ -51,6 +53,9 @@
         <button id="tabCookies" role="tab" type="button" aria-selected="false" aria-controls="cookiesPanel" tabindex="-1">Cookies <span id="cookiesCount">—</span></button>
       </div>
       <section id="activityPanel" role="tabpanel" tabindex="0" aria-labelledby="tabActivity">
+        <p id="activityExplanation" class="muted"></p>
+        <p id="blockSources" class="muted" hidden></p>
+        <h2 class="activity-heading">Rastreadores detectados</h2>
         <p id="trackerEmpty" class="muted">Sin rastreadores detectados.</p>
         <ul id="trackerList" class="data-list"></ul>
       </section>

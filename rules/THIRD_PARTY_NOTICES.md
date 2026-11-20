@@ -1,4 +1,6 @@
-# EasyList y EasyPrivacy
+# Avisos de terceros
+
+## EasyList y EasyPrivacy
 
 Las reglas de red de `easylist.json` y `easyprivacy.json` y los selectores de
 `cosmetic-selectors.js` son adaptaciones de **The EasyList authors**
@@ -31,9 +33,7 @@ navegaciones. Las excepciones de compatibilidad preceden a los bloqueos.
 
 La compilación omite sintaxis sin traducción segura en este subconjunto,
 incluidas expresiones regulares, redirecciones, opciones para otras
-extensiones y patrones sin un dominio de destino anclado. Los selectores
-empaquetados son filtros visuales acotados de clases e identificadores, con
-dos selectores por atributo de AdSense. Se respetan las excepciones admitidas
+extensiones y patrones sin un dominio de destino anclado. Los selectores empaquetados son filtros visuales acotados de clases, identificadores y determinados atributos CSS. Se respetan las excepciones admitidas
 por dominio. El archivo generado contiene datos de selección y se empaqueta
 sin instrucciones ejecutables de la lista original.
 
@@ -42,3 +42,7 @@ archivo, ajusta el archivo de bloqueo y el enlace de atribución, regenera los
 archivos y comprueba cobertura y compatibilidad en Chrome antes de publicar.
 La extensión usa las reglas empaquetadas, con actualizaciones junto a cada
 lanzamiento.
+
+## AdGuard Español/Portugués
+
+Consulta [la procedencia, licencia y compilación del filtro regional](adguard-es-pt/README.md).

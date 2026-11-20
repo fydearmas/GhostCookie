@@ -5,6 +5,6 @@
   "description": "Build tools for Ghost Cookie extension",
   "scripts": {
     "build": "node build.js",
-    "test": "python3 -B -m unittest discover -s native -v"
+    "test": "node scripts/compile-regional.mjs --check && node --test"
   }
 }

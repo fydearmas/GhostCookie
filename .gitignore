@@ -29,7 +29,7 @@ dist/
 _metadata/
 __pycache__/
 
-# Credenciales de firma y temporales de empaquetado
+# Credenciales locales
 .env
 .env.*
 *.p8
@@ -37,4 +37,3 @@ __pycache__/
 *.pfx
 *.keychain
 *.keychain-db
-/packaging/official-extension-ids.local.json

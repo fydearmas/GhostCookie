@@ -1,6 +1,8 @@
-# Privacidad y permisos de Ghost Cookie
+# Privacidad y permisos de Ghost Cookie 1.3.1
 
-Ghost Cookie puede leer la actividad necesaria para aplicar filtros y gestionar cookies del sitio. Al abrir el popup, muestra los metadatos de cookies y el recuento de bloqueos de la página actual. El historial de actividad se conserva en la sesión de Chrome y se descarta al cerrar la pestaña o terminar la sesión.
+Si tu extensión todavía muestra la versión 1.3.0, consulta [la política de esa versión](https://github.com/fydearmas/GhostCookie/blob/aa3e82405c314c5ed69fe0b2b1c9e04f053cda91/PROTECTION.md).
+
+Ghost Cookie puede leer la actividad necesaria para aplicar filtros y gestionar cookies del sitio. Al abrir el popup, muestra los metadatos de cookies y el recuento de bloqueos de la página actual. La actividad se conserva en la sesión de Chrome y se descarta al cerrar la pestaña o terminar la sesión.
 
 ## Permisos de Chrome
 
@@ -8,20 +10,11 @@ Ghost Cookie puede leer la actividad necesaria para aplicar filtros y gestionar 
 - **Cookies.** Consulta las cookies del sitio y las elimina cuando lo solicitas.
 - **Pestaña activa.** Permite consultar coincidencias de reglas cuando interactúas con el icono.
 - **Navegación y almacenamiento.** Distinguen documentos de una misma pestaña, guardan preferencias y conservan temporalmente la actividad de cada documento.
-- **Reglas declarativas.** Chrome procesa los bloqueos y las excepciones. El filtro de red usa las listas que se incluyen en cada versión.
-- **Mensajería nativa opcional.** Conecta Chrome con el asistente local cuando lo autorizas en Ajustes.
+- **Reglas declarativas.** Chrome procesa los bloqueos y las excepciones. El filtro de red usa las listas empaquetadas, incluido el filtro regional si lo activas.
 
-## Asistente local
+## Procesamiento local
 
-Cada usuario instala el asistente por separado y configura su propia credencial en el llavero del sistema. Cuando se solicita un análisis, el asistente envía a Google Gemini recuentos y códigos de señales de reputación. Google aplica la cuota y las condiciones de la cuenta asociada a la clave. Los valores de cookies, las URLs y el contenido de las páginas permanecen en Chrome.
-
-Puedes quitar el permiso en Ajustes y retirar la credencial con **remove-key** desde la terminal. [Guía del asistente](native/README.md)
-
-## Datos que se comparten
-
-Franky Solutions distribuye Ghost Cookie. La extensión aplica localmente los filtros de publicidad, rastreo y reputación. Los eventos de actividad de cada pestaña se guardan durante la sesión del navegador. Las preferencias y excepciones de sitios se conservan en el dispositivo.
-
-Si eliges usar Gemini, el asistente se comunica directamente con Google al solicitar un análisis. Comparte recuentos de actividad, coincidencia de reputación y códigos de señales. Google procesa la solicitud bajo las condiciones de la cuenta de Gemini de cada usuario. El llavero del sistema conserva la credencial. Puedes retirar el permiso en los ajustes y eliminar la clave desde el asistente.
+Franky Solutions distribuye Ghost Cookie. La extensión aplica localmente los filtros de publicidad, rastreo y reputación. Los eventos de actividad de cada pestaña se guardan durante la sesión del navegador. El panel calcula su explicación en el equipo. Los filtros se actualizan al instalar una nueva versión desde la tienda. La extensión procesa la URL del documento activo y señales del contenido para aplicar los filtros. Consulta las cookies del sitio para listar sus metadatos y borrarlas a petición del usuario. Los valores de las cookies permanecen en el navegador. El enlace para reportar problemas abre el formulario de GitHub en blanco. El filtro regional y las métricas funcionan sin transferir datos de navegación a servicios externos. Las preferencias y excepciones de sitios se conservan en el dispositivo.
 
 El uso de información obtenido mediante las APIs del navegador sigue los requisitos de Uso Limitado aplicables de Chrome Web Store. [Política de Uso Limitado](https://developer.chrome.com/docs/webstore/program-policies/limited-use)
 

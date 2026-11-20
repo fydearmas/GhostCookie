@@ -18,10 +18,13 @@
       <h2 id="filtersHeading">Protección</h2>
       <label class="setting"><input id="globalProtection" type="checkbox" disabled> Activar filtros y avisos de phishing</label>
       <label class="setting"><input id="classifyCookies" type="checkbox" disabled> Mostrar categorías estimadas de cookies</label>
+      <label class="setting"><input id="regionalProtection" type="checkbox" aria-describedby="regionalHelp" disabled> Filtro adicional para sitios en español y portugués</label>
+      <p id="regionalHelp" class="muted">Añade el filtro regional de AdGuard. Si un sitio falla tras activarlo, puedes desmarcarlo aquí.</p>
       <section class="list-versions" aria-labelledby="listVersionsHeading">
         <h3 id="listVersionsHeading">Listas instaladas</h3>
         <dl>
           <div><dt>EasyList y EasyPrivacy</dt><dd id="easyListDate">Consultando…</dd></div>
+          <div><dt>AdGuard Español/Portugués</dt><dd id="regionalListDate">Consultando…</dd></div>
           <div><dt>PhishDestroy</dt><dd id="phishListDate">Consultando…</dd></div>
         </dl>
       </section>
@@ -34,29 +37,6 @@
       <p id="protectionStatus" class="status" role="status"></p>
     </section>
 
-    <section class="settings-card" aria-labelledby="aiHeading">
-      <h2 id="aiHeading">Asistente local de Gemini</h2>
-      <p>Usa tu propia clave y la cuota de tu cuenta. El asistente local guarda la clave en el llavero del sistema.</p>
-      <ol class="setup-steps">
-        <li>Instala el asistente de tu sistema operativo.</li>
-        <li>Abre Ghost Cookie Assistant y guarda tu clave.</li>
-        <li>Autoriza el acceso y comprueba la conexión aquí.</li>
-      </ol>
-      <div class="form-actions">
-        <a class="button" href="https://github.com/fydearmas/GhostCookie/releases" target="_blank" rel="noopener noreferrer">Descargar asistente</a>
-      </div>
-      <details>
-        <summary>Instalación manual y diagnóstico</summary>
-        <p class="muted manual-copy">Para Linux o una extensión descomprimida, registra este ID siguiendo la guía del paquete de código fuente.</p>
-        <div class="identifier"><code id="extensionId"></code><button id="copyId" class="button">Copiar ID</button></div>
-      </details>
-      <div class="form-actions">
-        <button id="connectNative" class="button primary">Autorizar asistente</button>
-        <button id="checkNative" class="button quiet" disabled>Comprobar</button>
-        <button id="disconnectNative" class="button quiet" hidden>Quitar permiso</button>
-      </div>
-      <p id="nativeStatus" class="status" role="status"></p>
-    </section>
   </main>
   <script type="module" src="options.js"></script>
 </body>

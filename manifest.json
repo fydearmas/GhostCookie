@@ -83,13 +83,15 @@
         "id": "reputation",
         "enabled": true,
         "path": "rules/reputation.json"
+      },
+      {
+        "id": "adguard_es_pt",
+        "enabled": false,
+        "path": "rules/adguard-es-pt/network.json"
       }
     ]
   },
   "minimum_chrome_version": "145",
-  "optional_permissions": [
-    "nativeMessaging"
-  ],
   "incognito": "split",
   "content_security_policy": {
     "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
